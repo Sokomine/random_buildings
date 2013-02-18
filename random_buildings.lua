@@ -528,16 +528,10 @@ random_buildings.convert_to_table = function( value )
 
    if( count > 0 ) then
 
-      print("max: "..minetest.serialize( max ));
-      print("min: "..minetest.serialize( min ));
-
-      print("max (normal): "..minetest.serialize( max ));
       -- the maximum might be affected by the offset as well
       max          = { x=( tonumber(max.x) - tonumber( min.x)),
                        y=( tonumber(max.y) - tonumber( min.y)),
                        z=( tonumber(max.z) - tonumber( min.z)) };
-      print("max adjusted: "..minetest.serialize( max ));
-
 
       building_data.count  = count;
       building_data.max    = max;

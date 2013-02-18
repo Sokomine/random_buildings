@@ -15,6 +15,8 @@ local npc_groups = {
 
 local modpath = minetest.get_modpath("random_buildings");
 
+random_buildings.npc_trader_list = {}
+
 random_buildings.npc_trader_prototype = {
 		name="npc_trader",
 		modname="random_buildings",
@@ -100,6 +102,7 @@ random_buildings.npc_trader_prototype = {
 		}
 		
 
+
 -- why is such a basic function not provided?
 function deepcopy(orig)
     local orig_type = type(orig)
@@ -116,10 +119,17 @@ function deepcopy(orig)
     return copy
 end
 
+
+
 --register with animals mod
-random_buildings.add_trader = function( prototype, description, speciality, goods, names )
+random_buildings.add_trader = function( prototype, description, speciality, goods, names, texture )
 
    local new_trader = {};
+
+   -- default texture/skin for the trader
+   if( not(texture) or (texture == "" )) then
+      texture = "mob_npc_trader_mesh.png";
+   end
 
 --   print( "prototype: "..minetest.serialize( random_buildings.npc_trader_prototype ));
    -- copy data of the trader
@@ -128,6 +138,7 @@ random_buildings.add_trader = function( prototype, description, speciality, good
    new_trader.name                               = "npc_trader_"..speciality;
    new_trader.modname                            = "random_buildings";
    new_trader.generic.description                = description;
+-- TODO   new_trader.states.graphics_3d.textures        = { texture };
    new_trader.trader_inventory                   = { goods = goods, random_names = names };
 
    minetest.log( "action", "\t[Mod random_buildings] Adding mob "..new_trader.name)
@@ -135,18 +146,24 @@ random_buildings.add_trader = function( prototype, description, speciality, good
    print( "NEW TRADER: "..minetest.serialize( new_trader ));
    new_trader.generic.custom_on_activate_handler = mob_inventory.init_trader_inventory;
    mobf_add_mob( new_trader );
+
+   table.insert( random_buildings.npc_trader_list, speciality );
 end
+
 
 
 -- spawn a trader
 random_buildings.spawn_trader = function( pos, name )
 
-   local object = minetest.env:add_entity( pos, "random_buildings:npc_trader_"..name.."__default" );
+   -- slightly above the position of the player so that it does not end up in a solid block
+   local object = minetest.env:add_entity( {x=pos.x, y=(pos.y+0.5), z=pos.z}, "random_buildings:npc_trader_"..name.."__default" );
    if object ~= nil then
       object:setyaw( -1.14 );
    end
    print("Spawned trader "..tostring( name or "?" )..".");
 end
+
+
 
 -- add command so that a trader can be spawned
 minetest.register_chatcommand("trader", {
@@ -157,17 +174,18 @@ minetest.register_chatcommand("trader", {
 
                 local params_expected = "<trader type>";
                 if( param == "" or param==nil) then
-                   minetest.chat_send_player(name, "Please supply the type of trader! Supported: misc, clay, wood." );
+                   minetest.chat_send_player(name, "Please supply the type of trader! Supported: "..minetest.serialize( random_buildings.npc_trader_list ) );
                    return;
                 end
 
                 local player = minetest.env:get_player_by_name(name);
                 local pos    = player:getpos();
 
-                minetest.chat_send_player(name, "You are currently at Position "..tostring( pos.x )..","..tostring( pos.y )..","..tostring( pos.z )..".");
+                minetest.chat_send_player(name, "Placing trader at your position.");
                 random_buildings.spawn_trader( pos, param );
              end
 });
+
 
 
 
@@ -189,7 +207,8 @@ random_buildings.add_trader( random_buildings.npc_trader_prototype,
 	{ "default:paper 12", "default:mese_crystal 2", "default:stone 10"},
 	{ "default:chest 1", "default:mese_crystal 2", "default:stone 10"},
     },
-    { "Ali"}
+    { "Ali"},
+    ""
     );
 		
 
@@ -198,18 +217,55 @@ random_buildings.add_trader( random_buildings.npc_trader_prototype,
     "Trader of clay",
     "clay",
     {
-       {"default:clay 1",        "default:dirt 4",  "default:cobble 20"},
-       {"default:brick 1",       "default:dirt 4",  "default:cobble 48"},
+       {"default:clay 1",        "default:dirt 10", "default:cobble 20"},
+       {"default:brick 1",       "default:dirt 49", "default:cobble 99"},
        {"default:sand 1",        "default:dirt 2",  "default:cobble 10"},
        {"default:sandstone 1",   "default:dirt 10", "default:cobble 48"},
        {"default:desert_sand 1", "default:dirt 2",  "default:cobble 10"},
        {"default:glass 1",       "default:dirt 10", "default:cobble 48"},
+
+       {"vessels:glass_bottle 2",  "default:steel_ingot 1", "default:coal_lump 10"},
+       {"vessels:drinking_glass 2","default:steel_ingot 1", "default:coal_lump 10"},
+
+       {"default:clay 10",       "default:steel_ingot 2", "default:coal_lump 20"},
+       {"default:brick 10",      "default:steel_ingot 9", "default:mese_crystal 1"},
+       {"default:sand 10",       "default:steel_ingot 1", "default:coal_lump 20"},
+       {"default:sandstone 10",  "default:steel_ingot 2", "default:coal_lump 38"},
+       {"default:desert_sand 10","default:steel_ingot 1", "default:coal_lump 20"},
+       {"default:glass 10",      "default:steel_ingot 2", "default:coal_lump 38"},
+
     },
-    { "Toni" }
+    { "Toni" },
+    ""
     );
 
+
+-------------------------------------------
+-- Traders for moretrees (and normal trees)
+--------------------------------------------
+
+-- sell normal wood - rather expensive...
+random_buildings.add_trader( random_buildings.npc_trader_prototype,
+    "Trader of common wood",
+    "common_wood",
+    {
+       {"default:wood 4",             "default:dirt 24",       "default:cobble 24"},
+       {"default:tree 4",             "default:apple 2",       "default:coal_lump 4"},
+       {"default:tree 8",             "default:pick_stone 1",  "default:axe_stone 1"},
+       {"default:tree 12",            "default:cobble 80",     "default:steel_ingot 1"},
+       {"default:tree 36",            "bucket:bucket_empty 1", "bucket:bucket_water 1"},
+       {"default:tree 42",            "default:axe_steel 1",   "default:mese_crystal 4"},
+
+       {"default:sapling 1",          "default:dirt 10",       "default:cobble 10"},
+       {"default:leaves 10",          "default:dirt 10",       "default:cobble 10"}
+    },
+    { "lumberjack" },
+    ""
+    );
+
+
 -- not everyone has moretrees (though selling wood is one of the main purposes of this mod)
-if( minetest.get_modpath("moreores") ~= nil ) then
+if( minetest.get_modpath("moretrees") ~= nil ) then
 
    random_buildings.add_trader( random_buildings.npc_trader_prototype,
     "Trader of wood",
@@ -228,7 +284,8 @@ if( minetest.get_modpath("moreores") ~= nil ) then
        {"moretrees:willow_trunk 8",      "default:cobble 80", "default:steel_ingot 1"},
        {"moretrees:rubber_tree_trunk 8", "default:cobble 80", "default:steel_ingot 1"},
     },
-    { "Woody" }
+    { "Woody" },
+    ""
     );
 
 
@@ -237,13 +294,15 @@ if( minetest.get_modpath("moreores") ~= nil ) then
    
       -- all trunk types cost equally much
       local goods = {
+       {"moretrees:"..v.."_planks 4",    "default:dirt 24",       "default:cobble 24"},
        {"moretrees:"..v.."_trunk 4",     "default:apple 2",       "default:coal_lump 4"},
        {"moretrees:"..v.."_trunk 8",     "default:pick_stone 1",  "default:axe_stone 1"},
        {"moretrees:"..v.."_trunk 12",    "default:cobble 80",     "default:steel_ingot 1"},
        {"moretrees:"..v.."_trunk 36",    "bucket:bucket_empty 1", "bucket:bucket_water 1"},
        {"moretrees:"..v.."_trunk 42",    "default:axe_steel 1",   "default:mese_crystal 4"},
 
-       {"moretrees:"..v.."_sapling 1",   "default:mese 10",       "default:steel_ingot 48"}
+       {"moretrees:"..v.."_sapling 1",   "default:mese 10",       "default:steel_ingot 48"},
+       {"moretrees:"..v.."_leaves 10",   "default:cobble 1",      "default:dirt 2"}
        };
 
       -- sell the fruits of the trees (apples and coconuts have a slightly higher value than the rest)
@@ -260,26 +319,148 @@ if( minetest.get_modpath("moreores") ~= nil ) then
       elseif( v=='apple_tree' ) then
          table.insert( goods, { "default:apple 1",          "default:cobble 10", "default:dirt 10"} );
       end
-      -- TODO: rubber_tree: sell rubber?
-      -- TODO: sell planks, leaves?
-      
+      -- TODO: rubber_tree: sell rubber? (or rather do so in the farmingplus-trader?)
 
       random_buildings.add_trader( random_buildings.npc_trader_prototype,
         "Trader of "..( v or "unknown" ).." wood",
         v.."_wood",
         goods,
-        { "lumberjack" }
+        { "lumberjack" },
+        ""
         );
    end
 end
 
+-------------------------------------------------------------------
+-- Traders for Mobf animals
+-------------------------------------------------------------------
 
--- TODO: mehrfachangebote in unterschiedlichen portionen erlauben
+-- trader for cows and steers
+if( minetest.get_modpath("animal_cow") ~= nil ) then
+   random_buildings.add_trader( random_buildings.npc_trader_prototype,
+    "Trader of cows",
+    "animal_cow",
+    {
+       {"animal_cow:cow 1",           "default:mese_crystal 39", "moreores:gold_ingot 19"},
+       {"animal_cow:steer 1",         "default:mese_crystal 39", "moreores:gold_ingot 19"},
+       {"animal_cow:baby_calf_f 1",   "default:mese_crystal 19", "moreores:gold_ingot 9"},
+       {"animal_cow:baby_calf_m 1",   "default:mese_crystal 19", "moreores:gold_ingot 9"},
+
+       {"animalmaterials:milk 1",     "default:apple 10",        "default:leaves 29"},
+       {"animalmaterials:meat_beef 1","default:steel_ingot 1",    "default:leaves 29"},
+
+       {"animalmaterials:lasso 5",    "default:steel_ingot 2",    "default:leaves 39"},
+       {"animalmaterials:net 1",      "default:steel_ingot 2",    "default:leaves 39"}, -- to protect the animals
+    },
+    { "cow trader" },
+    ""
+    );
+end
+
+
+-- trader for sheep and lambs
+if( minetest.get_modpath("animal_sheep") ~= nil ) then
+   random_buildings.add_trader( random_buildings.npc_trader_prototype,
+    "Trader of sheep",
+    "animal_sheep",
+    {
+       {"animal_sheep:sheep 1",       "default:mese_crystal 19", "moreores:gold_ingot 19"},
+       {"animal_sheep:lamb 1",        "default:mese_crystal 9",  "moreores:gold_ingot 5"},
+
+       {"wool:white 10",              "default:steel_ingot 1",    "default:leaves 29"},
+       {"animalmaterials:meat_lamb 2","default:steel_ingot 1",    "default:leaves 29"},
+       {"animalmaterials:scissors 1", "default:steel_ingot 8",    "default:mese_crystal 3"}, -- TODO: sell elsewhere as well?
+
+       {"animalmaterials:lasso 5",    "default:steel_ingot 2",    "default:leaves 39"},
+       {"animalmaterials:net 1",      "default:steel_ingot 2",    "default:leaves 39"}, -- to protect the animals
+    },
+    { "sheep trader" },
+    ""
+    );
+end
+
+
+-- trader for chicken
+if( minetest.get_modpath("animal_chicken") ~= nil ) then
+   random_buildings.add_trader( random_buildings.npc_trader_prototype,
+    "Trader of chicken",
+    "animal_chicken",
+    {
+       {"animal_chicken:chicken 1",   "default:apple 10",      "default:coal_lump 20"},
+       {"animal_chicken:rooster 1",   "default:apple 5",       "default:coal_lump 10"},
+       {"animal_chicken:chick_f 1",   "default:apple 4",       "default:coal_lump 8"},
+       {"animal_chicken:chick_m 1",   "default:apple 2",       "default:coal_lump 4"},
+
+       {"animalmaterials:feather 1",  "default:leaves 1",      "default:leaves 1"},
+       {"animalmaterials:egg 2",      "default:leaves 4",      "default:leaves 4"},
+       {"animalmaterials:meat_chicken 1","default:apple 6",    "default:coal_lump 11"},
+
+       {"animalmaterials:lasso 5",    "default:steel_ingot 2",  "default:leaves 39"},
+       {"animalmaterials:net 1",      "default:steel_ingot 2",  "default:leaves 39"}, -- to protect the animals
+    },
+    { "chicken trader" },
+    ""
+    );
+end
+
+
+-- trader for exotic animals
+exotic_animals = {};
+-- deers are expensive
+if( minetest.get_modpath("animal_deer") ~= nil ) then
+   table.insert( exotic_animals,  { "animal_deer:deer_m 1",           "default:mese_crystal 49", "moreores:gold_ingot 39"});
+   table.insert( exotic_animals,  { "animalmaterials:meat_venison 1", "default:steel_ingot 5",    "default:mese_crystal 1"});
+end
+-- rats are...not expensive
+if( minetest.get_modpath("animal_rat") ~= nil ) then
+   table.insert( exotic_animals,  { "animal_rat:rat 1",               "default:coal_lump 1",     "default:leaves 9"});
+end
+-- wolfs are sold only in the tamed version (the rest end up as fur)
+if( minetest.get_modpath("animal_wolf") ~= nil ) then
+   table.insert( exotic_animals,  { "animal_wolf:tamed_wolf 1",       "default:mese_crystal 89", "moreores:gold_ingot 59"});
+   table.insert( exotic_animals,  { "animalmaterials:fur 1",          "default:steel_ingot 5",    "default:mese_crystal 3"});
+end
+-- ostrichs - great to ride on :-)
+if( minetest.get_modpath("mob_ostrich") ~= nil ) then
+   table.insert( exotic_animals,  { "mob_ostrich:ostrich_f 1",        "default:mese_crystal 39", "moreores:gold_ingot 24"});
+   table.insert( exotic_animals,  { "mob_ostrich:ostrich_m 1",        "default:mese_crystal 29", "moreores:gold_ingot 14"});
+   table.insert( exotic_animals,  { "animalmaterials:meat_ostrich 1", "default:steel_ingot 6",    "default:mese_crystal 2"});
+   table.insert( exotic_animals,  { "animalmaterials:egg_big 1",      "default:steel_ingot 1",    "default:leaves 29"});
+end
+-- general tools for usage with animals
+if( minetest.get_modpath("animalmaterials") ~= nil ) then
+   table.insert( exotic_animals,  { "animalmaterials:scissors 1",     "default:steel_ingot 8",    "default:mese_crystal 3"});
+   table.insert( exotic_animals,  { "animalmaterials:lasso 5",        "default:steel_ingot 2",    "default:leaves 39"});
+   table.insert( exotic_animals,  { "animalmaterials:net 1",          "default:steel_ingot 2",    "default:leaves 39"});
+   table.insert( exotic_animals,  { "animalmaterials:saddle 1",       "default:steel_ingot 19",   "default:leaves 99"});
+end
+-- barns to breed animals
+if( minetest.get_modpath("barn") ~= nil ) then
+   table.insert( exotic_animals,  { "barn:barn_empty 1",              "default:steel_ingot 1",    "default:leaves 29"});
+   table.insert( exotic_animals,  { "barn:barn_small_empty 2",        "default:steel_ingot 1",    "default:leaves 29"});
+   table.insert( exotic_animals,  { "default:leaves 9",               "default:steel_ingot 1",    "default:coal_lump 5"});
+end
+
+-- IMPORTANT: this trader has no more spaces left for further goods!
+-- add the trader
+if( #exotic_animals > 0 ) then
+   random_buildings.add_trader( random_buildings.npc_trader_prototype,
+    "Trader of exotic animals",
+    "animal_exotic",
+    exotic_animals,
+    { "trader of exotic animals" },
+    ""
+    );
+end
+
+
+
+
+
 -- TODO: als handelsware nahrung akzeptieren
 
 -- TODO: trader fuer angeln?
 -- TODO: trader fuer farmbedarf (saatgut; alles einzeln (=farmer) plus allgemeiner haendler)
--- TODO: trader fuer animals (alle tiere einzeln plus allgemeiner haendler)
 -- TODO: trader fuer moreores (ingots)
 -- TODO: bergbau-trader; verkauft eisen und kohle, kauft brot/food/apples
 -- TODO: trader fuer homedecor
