@@ -155,13 +155,18 @@ print( "Selected "..( haus or "?" ).." with mirror = "..tostring( mirror ).." an
    local node_to_check = minetest.env:get_node({x=start_pos.x,y=(start_pos.y-1),z=start_pos.z});
    if(      node_to_check ~= nil 
         and node_to_check.name ~= "ignore"
-        and ( node_to_check.name == "default:sand"
-           or node_to_check.name == "default:desert_sand"
+        and ( node_to_check.name == "default:desert_sand"
            or node_to_check.name == "default:desert_stone"
-            or node_to_check.name == "default:cactus" )) then
+           or node_to_check.name == "default:cactus" )) then
 
        random_buildings.build_support_structure( { x=start_pos.x,y=start_pos.y,z=start_pos.z}, {x=max.x, y=max.y,z=max.z},
                                              "default:desert_sand","default:desert_stone","default:desert_stone",1,25,2,rotate);
+   elseif(  node_to_check ~= nil 
+        and node_to_check.name ~= "ignore"
+        and ( node_to_check.name == "default:sand" )) then
+
+       random_buildings.build_support_structure( { x=start_pos.x,y=start_pos.y,z=start_pos.z}, {x=max.x, y=max.y,z=max.z},
+                                             "default:sand",           "default:stone", "default:stone", 1, 25, 2,rotate);
    else
        random_buildings.build_support_structure( { x=start_pos.x,y=start_pos.y,z=start_pos.z}, {x=max.x, y=max.y,z=max.z},
                                              "default:dirt_with_grass","default:stone", "default:stone", 1, 25, 2, rotate );
@@ -308,8 +313,6 @@ random_buildings.build_support_platform = function( pos, max, material_wall, mat
    if( max_height < 1 or material=="air") then
       return;
    end
-
-   -- TODO: in case of sand, support with other material
 
    for x=pos.x, (pos.x+max.x) do
       for z=pos.z, (pos.z+max.z) do
