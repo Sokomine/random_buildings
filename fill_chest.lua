@@ -88,9 +88,10 @@ random_buildings.fill_chest_random = function( pos )
       -- repeat this many times
       for count=1, v[ 4 ] do
 
+         local inv_size = inv:get_size('main');
          -- to avoid too many things inside a chest, lower probability
          if(     count<30 -- make sure it does not get too much and there is still room for a new stack
-             and v[ 2 ] > math.random( 1, 200 )) then
+             and v[ 2 ] > math.random( 1, 200 )    and inv_size ~= nil and inv_size > 0) then
 
              --inv:add_item('main', v[ 1 ].." "..tostring( math.random( 1, tonumber(v[ 3 ]) )));
              -- add itemstack at a random position in the chests inventory 

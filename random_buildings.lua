@@ -131,6 +131,8 @@ end
 -- actually build the house
 ------------------------------------------------------
 
+-- returns NIL if the area has not been loaded/generated entirely yet
+-- returns FALSE if the building could not be built due to area not compleately generated/loaded
 random_buildings.build_building = function( start_pos, building_name, rotate, mirror, platform_materials, replace_material )
  
    local selected_building = random_buildings.building[ building_name ];
@@ -139,8 +141,11 @@ random_buildings.build_building = function( start_pos, building_name, rotate, mi
    local min    = { x = selected_building.min.x, y = selected_building.min.y, z = selected_building.min.z };
 
    -- houses floating in the air would be unrealistic
-   random_buildings.build_support_structure( { x=start_pos.x,y=start_pos.y,z=start_pos.z}, {x=max.x, y=max.y,z=max.z},
-                                             platform_materials.platform, platform_materials.pillars, platform_materials.walls, 1, 25, 2, rotate );
+   if( not( random_buildings.build_support_structure( { x=start_pos.x,y=start_pos.y,z=start_pos.z}, {x=max.x, y=max.y,z=max.z},
+                                             platform_materials.platform, platform_materials.pillars, platform_materials.walls, 1, 25, 2, rotate ))) then
+      --print( "building of support structure failed" );
+      return false;
+   end
 
    local nodename;
    local param2;
@@ -202,6 +207,7 @@ random_buildings.build_building = function( start_pos, building_name, rotate, mi
       end
    end
 
+   return true;
 end
 
 
@@ -213,10 +219,11 @@ end
 -- build a pillar out of material starting from pos downward so that a house can be placed on it without flying in the air
 -- max_height: if the pillar would get too high, give up eventually
 -- if material is "", then it doesn't add any nodes and just checks height
+-- returns the height of the pillar if it managed to build the pillar; returns -1 when it encountered a node of type IGNORE
 random_buildings.build_pillar = function( pos, material, material_top, max_height )
 
    if( max_height < 1 or material=="air") then
-      return;
+      return 0;
    end
 
    local i = 0;
@@ -224,9 +231,14 @@ random_buildings.build_pillar = function( pos, material, material_top, max_heigh
 
       local new_y = tonumber(pos.y)-i;
       local node_to_check = minetest.env:get_node({x=pos.x,y=new_y,z=pos.z});
-      if(      node_to_check ~= nil 
-           and node_to_check.name ~= "ignore"
-           and ( node_to_check.name == "air" 
+
+      -- if the area has not been loaded yet it is impossible to build the pillar completely
+      if(      node_to_check == nil 
+           or  node_to_check.name == "ignore" ) then
+
+         return -1; -- a case of "could not build pillar completely due to node doesn't exist yet"
+
+      elseif(    node_to_check.name == "air" 
                  -- trees count as air here
               or node_to_check.name == "default:tree" 
                  -- a cactus can be removed safely as well
@@ -234,7 +246,7 @@ random_buildings.build_pillar = function( pos, material, material_top, max_heigh
                  -- same with leaves
               or node_to_check.name == "default:leaves" 
                  -- mostly flowers; covers liquids as well
-              or minetest.registered_nodes[ node_to_check.name ].walkable == false)) then
+              or minetest.registered_nodes[ node_to_check.name ].walkable == false) then
        
          -- enlarge the pillar by one
          local node_name = material;
@@ -247,6 +259,7 @@ random_buildings.build_pillar = function( pos, material, material_top, max_heigh
 
       -- else: finished; some form of ground reached
       else
+
          return i;
 --         i = max_height + 1;
       end
@@ -258,10 +271,11 @@ end
 
 
 -- build a wall between two pillars so that the house stands on them
+-- returns FALSE if something could not be built due to area not yet generated
 random_buildings.build_support_wall = function( pos, vector, length, material,  material_top, max_height )
 
    if( max_height < 1 or material=="air" or length<1) then
-      return;
+      return true;
    end
 
    for i=0, (length) do
@@ -270,43 +284,55 @@ random_buildings.build_support_wall = function( pos, vector, length, material,  
       local new_y = pos.y + (i*tonumber(vector.y));
       local new_z = pos.z + (i*tonumber(vector.z));
       -- the build_pillar function builds down automaticly; thus, y is constant
-      random_buildings.build_pillar( {x=new_x, y=new_y, z=new_z }, material, material_top, max_height );
+      local res = random_buildings.build_pillar( {x=new_x, y=new_y, z=new_z }, material, material_top, max_height );
+      if( res == -1 ) then
+         return false;
+      end
    end
+   return true;
 end
 
 
+-- with those random pillars, situations in which not yet generated land is encountered are ignored
 random_buildings.build_support_wall_random = function( pos, vector, length, material_wall,  material_top, max_height )
 
    local l = 0;
    local a = 0;
    a = math.random( 1, math.floor( length/2  ));
    l = math.random( 1, length - a);
+   -- if it can not be build due to not yet generated land that does not matter in this case
    random_buildings.build_support_wall( {x=(pos.x+(a*vector.x)), y=(pos.y-1), z=(pos.z+(a*vector.z))}, vector, l, material_wall, material_top, max_height );
 end
 
 
+-- returns FALSE if something could not be built due to area not yet generated
 random_buildings.build_support_platform = function( pos, max, material_wall, material, max_height )
 
    if( max_height < 1 or material=="air") then
-      return;
+      return true;
    end
 
    for x=pos.x, (pos.x+max.x) do
       for z=pos.z, (pos.z+max.z) do
-         random_buildings.build_pillar( {x=x, y=pos.y, z=z }, material_wall, material, max_height );
+         local res = random_buildings.build_pillar( {x=x, y=pos.y, z=z }, material_wall, material, max_height );
+         if( res==-1 ) then
+            return false;
+         end
       end
    end
+   return true;
 end
 
 
 -- builds a pillar and walls on which the house can stand
+-- returns FALSE if something could not be built due to area not yet generated
 random_buildings.build_support_structure = function( pos, maximum, material_top, material_pillar, material_wall, second_wall, max_height, max_height_platform, rotate )
 
    -- create a copy for rotation
    local max = { x=maximum.x, y=maximum.y, z=maximum.z };
 
    if( max.x < 1 or max.z < 1 or max_height < 1 ) then
-      return;
+      return true;
    end
 
    -- the width/length of the building changes with rotation
@@ -321,39 +347,52 @@ random_buildings.build_support_structure = function( pos, maximum, material_top,
    pos.y = tonumber( pos.y ) - 2;
 
    
-
    -- support pillars beneath the four corners
-   random_buildings.build_pillar( {x=(pos.x      ), y=pos.y, z=(pos.z      )}, material_pillar, material_top, max_height );
-   random_buildings.build_pillar( {x=(pos.x+max.x), y=pos.y, z=(pos.z      )}, material_pillar, material_top, max_height );
-   random_buildings.build_pillar( {x=(pos.x      ), y=pos.y, z=(pos.z+max.z)}, material_pillar, material_top, max_height );
-   random_buildings.build_pillar( {x=(pos.x+max.x), y=pos.y, z=(pos.z+max.z)}, material_pillar, material_top, max_height );
+   if(  ( random_buildings.build_pillar( {x=(pos.x      ), y=pos.y, z=(pos.z      )}, material_pillar, material_top, max_height ) ==-1)
+     or ( random_buildings.build_pillar( {x=(pos.x+max.x), y=pos.y, z=(pos.z      )}, material_pillar, material_top, max_height ) ==-1)
+     or ( random_buildings.build_pillar( {x=(pos.x      ), y=pos.y, z=(pos.z+max.z)}, material_pillar, material_top, max_height ) ==-1)
+     or ( random_buildings.build_pillar( {x=(pos.x+max.x), y=pos.y, z=(pos.z+max.z)}, material_pillar, material_top, max_height ) ==-1)) then
+      --print("pillars failed");
+      return false;
+   end
 
    -- support walls between the pillars
-   random_buildings.build_support_wall( {x=(pos.x        ), y=pos.y, z=(pos.z        )}, {x=1,y=0,z=0}, max.x-1, material_wall, material_top, max_height );
-   random_buildings.build_support_wall( {x=(pos.x        ), y=pos.y, z=(pos.z        )}, {x=0,y=0,z=1}, max.z-1, material_wall, material_top, max_height );
-   random_buildings.build_support_wall( {x=(pos.x        ), y=pos.y, z=(pos.z+max.z  )}, {x=1,y=0,z=0}, max.x-1, material_wall, material_top, max_height );
-   random_buildings.build_support_wall( {x=(pos.x+max.x  ), y=pos.y, z=(pos.z        )}, {x=0,y=0,z=1}, max.z-1, material_wall, material_top, max_height );
+   if(  not( random_buildings.build_support_wall( {x=(pos.x        ), y=pos.y, z=(pos.z        )}, {x=1,y=0,z=0}, max.x-1, material_wall, material_top, max_height ))
+     or not( random_buildings.build_support_wall( {x=(pos.x        ), y=pos.y, z=(pos.z        )}, {x=0,y=0,z=1}, max.z-1, material_wall, material_top, max_height ))
+     or not( random_buildings.build_support_wall( {x=(pos.x        ), y=pos.y, z=(pos.z+max.z  )}, {x=1,y=0,z=0}, max.x-1, material_wall, material_top, max_height ))
+     or not( random_buildings.build_support_wall( {x=(pos.x+max.x  ), y=pos.y, z=(pos.z        )}, {x=0,y=0,z=1}, max.z-1, material_wall, material_top, max_height ))) then
+      --print(" walls failed");
+      return false;
+   end
 
    -- build a second set of walls around the platform - this time 2 less high
 
    -- support platform
-   random_buildings.build_support_platform( {x=pos.x, y=(pos.y+1), z=pos.z}, max, material_wall, material_top, max_height_platform );
+   if(  not( random_buildings.build_support_platform( {x=pos.x, y=(pos.y+1), z=pos.z}, max, material_wall, material_top, max_height_platform ))) then
+      --print("platform failed");
+      return false;
+   end
 
    -- optionally add more walls so that it looks better
    if( second_wall == 1 ) then
 
-      random_buildings.build_support_wall( {x=(pos.x        ), y=pos.y, z=(pos.z-1      )}, {x=1,y=0,z=0}, max.x+1, material_wall, material_top, max_height );
-      random_buildings.build_support_wall( {x=(pos.x-1      ), y=pos.y, z=(pos.z-1      )}, {x=0,y=0,z=1}, max.z+2, material_wall, material_top, max_height );
-      random_buildings.build_support_wall( {x=(pos.x        ), y=pos.y, z=(pos.z+max.z+1)}, {x=1,y=0,z=0}, max.x+1, material_wall, material_top, max_height );
-      random_buildings.build_support_wall( {x=(pos.x+max.x+1), y=pos.y, z=(pos.z        )}, {x=0,y=0,z=1}, max.z+1, material_wall, material_top, max_height );
+      if(  not( random_buildings.build_support_wall( {x=(pos.x        ), y=pos.y, z=(pos.z-1      )}, {x=1,y=0,z=0}, max.x+1, material_wall, material_top, max_height ))
+        or not( random_buildings.build_support_wall( {x=(pos.x-1      ), y=pos.y, z=(pos.z-1      )}, {x=0,y=0,z=1}, max.z+2, material_wall, material_top, max_height ))
+        or not( random_buildings.build_support_wall( {x=(pos.x        ), y=pos.y, z=(pos.z+max.z+1)}, {x=1,y=0,z=0}, max.x+1, material_wall, material_top, max_height ))
+        or not( random_buildings.build_support_wall( {x=(pos.x+max.x+1), y=pos.y, z=(pos.z        )}, {x=0,y=0,z=1}, max.z+1, material_wall, material_top, max_height ))) then
+         --print("second wall failed");
+         return false;
+      end
 
-      -- now build even further walls - but this time of limited length
+      -- now build even further walls - but this time of limited length;
+      -- if the area for those has not been generated yet we don't care
       random_buildings.build_support_wall_random( {x=(pos.x        ), y=(pos.y-1), z=(pos.z-2      )}, {x=1,y=0,z=0}, max.x+4, material_wall, material_top, max_height );
       random_buildings.build_support_wall_random( {x=(pos.x-2      ), y=(pos.y-1), z=(pos.z-2      )}, {x=0,y=0,z=1}, max.z+4, material_wall, material_top, max_height );
       random_buildings.build_support_wall_random( {x=(pos.x        ), y=(pos.y-1), z=(pos.z+max.z+2)}, {x=1,y=0,z=0}, max.x+4, material_wall, material_top, max_height );
       random_buildings.build_support_wall_random( {x=(pos.x+max.x+2), y=(pos.y-1), z=(pos.z        )}, {x=0,y=0,z=1}, max.z+4, material_wall, material_top, max_height );
 
    end
+   return true;
 end
 
 
@@ -390,6 +429,7 @@ end
 
 
 -- returns -1 if the area is not free; returns 0..5 if the height has to be increased
+-- returns { status = "ok", add_height = <integer>}
 random_buildings.check_if_free = function( pos, max )
 
    local wrong_nodes    = 0;
@@ -403,9 +443,12 @@ random_buildings.check_if_free = function( pos, max )
 
             local node  = minetest.env:get_node(  {x=x1, y=y1, z=z1});
 
-            if(       node      ~= nil
-                  and node.name ~= "ignore" 
-                  and node.name ~= "air" ) then
+            if(       node      == nil
+                   or node.name == "ignore" ) then
+               --print("in check_if_free");
+               return { status = "need_to_wait", add_height = 0};
+
+            elseif( node.name ~= "air" ) then
                  
                if(      node.name == 'default:sand' 
                      or node.name == 'default:clay'
@@ -450,7 +493,7 @@ random_buildings.check_if_free = function( pos, max )
                else
                   print( "ERROR! Building of house aborted. Found "..(node.name or "?"));
                   wrong_nodes = wrong_nodes + 1;
-                  return -1;
+                  return { status = "aborted", add_height = 0, reason = node.name};
                end
             end
          end
@@ -471,12 +514,13 @@ random_buildings.check_if_free = function( pos, max )
      
    print( "Need to remove: "..tostring( need_to_remove ).." wrong nodes: "..tostring( wrong_nodes ).." ignored nodes: "..tostring( ignored_nodes ));
    print( "New height: "..tostring( pos.y + move_up ));
-   return move_up;
+   return { status = "ok", add_height = move_up };
 end
 
 
 
-   -- count how many blocks of each type there are on the ground in order to find out what to use
+-- count how many blocks of each type there are on the ground in order to find out what to use
+-- returns nil if it encountered not yet loaded land somewhere
 random_buildings.get_platform_materials = function( pos, max )
    local found_sand   = 0;
    local found_desert = 0;
@@ -492,11 +536,17 @@ random_buildings.get_platform_materials = function( pos, max )
       for z1 = (pos.z), (pos.z+max.z) do
 
          local height = random_buildings.build_pillar( {x=x1, y=(pos.y+20), z=z1}, "", "", 40 );
+         if( height == -1 ) then
+            return nil;
+         end
 
          local node   = minetest.env:get_node(  {x=x1, y=(pos.y+(20-height)), z=z1});
-         if(      node      ~= nil
-              and node.name ~= "ignore" 
-              and node.name ~= "air" ) then
+         if(      node      == nil
+              or  node.name == "ignore" ) then
+            return nil;
+         end
+
+         if(        node.name ~= "air" ) then
 
             if(     node.name == 'default:sand' 
                  or node.name == 'default:clay') then
@@ -560,7 +610,8 @@ end
 
 
 -- actually spawn a building (provided there is space for it)
-random_buildings.spawn_building = function( pos, building_name, rotate, mirror, replacements, inhabitant,  name )
+-- returns { status = "need_to_wait" } if the area has not been entirely generated yet;
+random_buildings.spawn_building = function( pos, building_name, rotate, mirror, replacements, inhabitant)
 
    -- find out what the dimensions of the desired building are
    local selected_building = random_buildings.building[ building_name ];
@@ -573,11 +624,13 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
       max  = { x = selected_building.max.z, y = selected_building.max.y, z = selected_building.max.x };
    end
 
-   -- get a random position at least 5 nodes away from the trunk of the tree
-   pos = random_buildings.get_random_position( pos, 5, 20);
-
    -- search for ground level at the given coordinates
    local height = random_buildings.build_pillar( {x=(pos.x), y=(pos.y+20), z=(pos.z)}, "", "", 40 );
+   if( height == -1 ) then
+      --print("in spawn_building 1");
+      return { x=pos.x, y=pos.y, z=pos.z, status = "need_to_wait" };
+   end
+
    local target_height = (pos.y+(20-height));
    --print( "Height detected: "..minetest.serialize( height ).." target height: "..tostring( target_height ));
    -- no underwater houses!
@@ -585,12 +638,12 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
       target_height = 2;
    end
    -- no insanely high positions above the tree/start position
-   if( target_height > (pos.y+8)) then
-      target_height = pos.y + 8;
+   if( target_height > (pos.y+12)) then
+      target_height = pos.y + 12;
    end 
    -- further sanity check to avoid ending up in a deep hole created by cavegen
-   if( target_height < (pos.y-8)) then
-      target_height = pos.y - 8;
+   if( target_height < (pos.y-12)) then
+      target_height = pos.y - 12;
    end 
    print( " Trying position "..minetest.serialize( pos ).." height: "..tostring( height-20 ).." new height: "..tostring( (pos.y+(height-19))));
    print( " Actual target position: "..minetest.serialize( target_height ));
@@ -599,23 +652,35 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
 
 
    -- check the area if there are no user-placed nodes (as far as this can be determined)
-   local move_up = random_buildings.check_if_free( pos, max );
-   if( move_up == -1 ) then
-      minetest.chat_send_player(name, "Aborting. There are nodes the random building is not allowed to replace.");
-      print(name, "Aborting. There are nodes the random building is not allowed to replace.");
-      return;
+   local move_up_info = random_buildings.check_if_free( pos, max );
+   if(     move_up_info.status == "need_to_wait" ) then 
+
+      --print("in spawn_building 2");
+      return { x=pos.x, y=pos.y, z=pos.z, status = "need_to_wait" };
+
+   elseif( move_up_info.status == "aborted" ) then
+
+      return { x=pos.x, y=pos.y, z=pos.z, status = "aborted", reason = move_up_info.reason };
    end 
    -- move upwards a bit to avoid having to replace too many nodes
-   pos.y = pos.y + move_up;
+   pos.y = pos.y + move_up_info.add_height;
    
    -- find out if we need to cover the platform the building will end up on with sand, desert sand or dirt
    local platform_materials = random_buildings.get_platform_materials( pos, max );
+   if( not( platform_materials )) then
+      --print("in spawn_building 3");
+      return { x=pos.x, y=pos.y, z=pos.z, status = "need_to_wait" };
+   end
+     
 
    -- delete those blocks that are at the location where the house will spawn
    random_buildings.make_room( pos, max );
    
    -- actually build the building
-   random_buildings.build_building( pos, building_name, rotate, mirror, platform_materials, replacements );
+   if( not( random_buildings.build_building( pos, building_name, rotate, mirror, platform_materials, replacements ))) then
+      --print("in spawn_building 4");
+      return { x=pos.x, y=pos.y, z=pos.z, status = "need_to_wait" };
+   end
 
    local tpos = {x=pos.x, y=(pos.y+1), z=pos.z};
    -- put the trader inside
@@ -663,6 +728,7 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
       random_buildings.spawn_trader( tpos, inhabitant );
    end
 
+   return { x=pos.x, y=pos.y, z=pos.z, status = "ok" };
 end
 
 
@@ -790,21 +856,10 @@ minetest.register_node("random_buildings:build", {
                 local replacements = {};
 
                     
-                local possible_types = {'birch','spruce','jungletree','fir','beech','apple_tree','oak','sequoia','palm','pine',
-                                        'willow','rubber_tree'};
+                local possible_types = {'birch','spruce','jungletree','fir','beech','apple_tree','oak','sequoia','palm','pine', 'willow','rubber_tree'};
                 local typ = possible_types[ math.random( 1, #possible_types )];
 
-                if( minetest.get_modpath("moreores") ~= nil ) then
-                   replacements[ 'moretrees:TYP_planks' ] = 'moretrees:'..typ..'_planks';
-                   replacements[ 'moretrees:TYP_trunk'  ] = 'moretrees:'..typ..'_trunk';
-                   replacements[ 'moretrees:TYP_trunk_sideways' ] = 'moretrees:'..typ..'_trunk_sideways';
-                else
-                   replacements[ 'moretrees:TYP_planks' ] = 'default:brick';
-                   replacements[ 'moretrees:TYP_trunk'  ] = 'default:cobble'; 
-                   replacements[ 'moretrees:TYP_trunk_sideways' ] = 'default:cobble';
-                end
-
-                random_buildings.build_random( pos, replacements, {platform="default:dirt", pillars="default:cobble", walls="default:stone"} );
+                random_buildings.build_next_to_tree( {x=pos.x, y=pos.y, z=pos.z, typ = "moretrees:"..typ.."_trunk", name = placer:get_player_name() } );
         end
 })
 
@@ -813,7 +868,7 @@ minetest.register_node("random_buildings:build", {
 -- add command so that a trader can be spawned
 minetest.register_chatcommand("thaus", {
         params = "",
-        description = "Spawns an npc trader of the given type.",
+        description = "Spawns a random building.",
         privs = {},
         func = function(name, param)
 
@@ -825,29 +880,91 @@ minetest.register_chatcommand("thaus", {
                 local possible_types = {'birch','spruce','jungletree','fir','beech','apple_tree','oak','sequoia','palm','pine', 'willow','rubber_tree'};
                 local typ = possible_types[ math.random( 1, #possible_types )];
 
-                local replacements = {};
-                if( minetest.get_modpath("moretrees") ~= nil ) then
-                   replacements[ 'moretrees:TYP_planks' ] = 'moretrees:'..typ..'_planks';
-                   replacements[ 'moretrees:TYP_trunk'  ] = 'moretrees:'..typ..'_trunk';
-                   replacements[ 'moretrees:TYP_trunk_sideways' ] = 'moretrees:'..typ..'_trunk_sideways';
-                else
-                   replacements[ 'moretrees:TYP_planks' ] = 'default:brick';
-                   replacements[ 'moretrees:TYP_trunk'  ] = 'default:cobble';
-                   replacements[ 'moretrees:TYP_trunk_sideways' ] = 'default:cobble';
-                end
-
-                -- TODO: select from list of available houses
-                local building_name = 'haus'..tostring( math.random(1,8));
-                local mirror = math.random(0,1);
-                local rotate = math.random(0,3); 
-
-                mirror = 0; -- TODO
-
-                minetest.chat_send_player( name, "Selected "..( building_name or "?" ).." with mirror = "..tostring( mirror ).." and rotation = "..tostring( rotate )..".");
-                pos = random_buildings.spawn_building( pos, building_name, rotate, mirror, replacements, typ.."_wood", name );
-                if( pos ~= nil ) then
-                   minetest.chat_send_player( name, "Build house at position "..minetest.serialize( pos )..".");
-                end
+                random_buildings.build_next_to_tree( {x=pos.x, y=pos.y, z=pos.z, typ = "moretrees:"..typ.."_trunk", name = name } );
              end
 });
+
+
+random_buildings.build_next_to_tree = function( pos )
+
+   if( not( pos.typ )) then
+      return;
+   end
+--   print( "RANDOM BUILDINGS growing tree "..tostring( pos.typ ).." at position "..minetest.serialize( pos )); --..minetest.serialize( pos ));
+
+   for typ in pos.typ:gmatch( "moretrees:(%w+)_trunk") do
+--      print( " SELECTED TYP: "..tostring( typ ));
+
+      -- abort if the tree has not appeared
+      if( not( pos.last_status )) then
+         local pos_tree = minetest.env:find_node_near(pos, 5, pos.typ);
+         -- no tree?
+         if( not( pos_tree )) then
+            print( "Aborting placement of lumberjack house at "..minetest.serialize( pos ).." due to lack of tree!");
+            return;
+         end
+      end
+
+      local replacements = {};
+      if( minetest.get_modpath("moretrees") ~= nil ) then
+         replacements[ 'moretrees:TYP_planks' ]         = 'moretrees:'..typ..'_planks';
+         replacements[ 'moretrees:TYP_trunk'  ]         = 'moretrees:'..typ..'_trunk';
+         replacements[ 'moretrees:TYP_trunk_sideways' ] = 'moretrees:'..typ..'_trunk_sideways';
+      else
+         replacements[ 'moretrees:TYP_planks' ]         = 'default:wood';
+         replacements[ 'moretrees:TYP_trunk'  ]         = 'default:tree';
+         replacements[ 'moretrees:TYP_trunk_sideways' ] = 'default:tree';
+      end
+
+      -- TODO: select from list of available houses
+      local building_name = 'haus'..tostring( math.random(1,8));
+      local mirror = math.random(0,1);
+      local rotate = math.random(0,3); 
+
+      mirror = 0; -- TODO
+
+      local result;
+      local pos2;
+
+      local i = 0;
+      local found = false;
+      -- try up to 3 times
+      if( pos.last_status == nil ) then
+
+         while( i < 3 and found == false) do
+
+            -- get a random position at least 5 nodes away from the trunk of the tree
+            pos2 = random_buildings.get_random_position( pos, 5, 20);
+   
+            result = random_buildings.spawn_building( {x=pos2.x,y=pos2.y,z=pos2.z}, building_name, rotate, mirror, replacements, typ.."_wood" );
+
+            i = i + 1;
+            -- status "aborted" happens if there is something in the way
+            if( result.status ~= "aborted" ) then
+               found = true;
+            end
+         end
+      else
+         pos2   = {x=pos.x,y=pos.y,z=pos.z};
+         result = random_buildings.spawn_building( {x=pos2.x,y=pos2.y,z=pos2.z}, building_name, rotate, mirror, replacements, typ.."_wood" );
+      end
+
+ 
+      if( pos.name ~= nil ) then
+         if( result.status == "ok" ) then
+            minetest.chat_send_player( pos.name, "Build house at position "..minetest.serialize( result )..
+                     ". Selected "..( building_name or "?" ).." with mirror = "..tostring( mirror ).." and rotation = "..tostring( rotate )..".");
+         else
+            -- pos contains the reason for the failure
+            minetest.chat_send_player( pos.name, "FAILED to build house at position "..minetest.serialize( result )..".");
+         end
+      end
+
+      -- try building again - 20 seconds later
+      if( result.status == "need_to_wait" ) then
+         minetest.after( 20, random_buildings.build_next_to_tree, {x=pos2.x,y=pos2.y,z=pos2.z,typ=pos.typ,name=pos.name, last_status = result.status} );
+      end
+   end
+end
+
 
