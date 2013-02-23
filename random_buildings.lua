@@ -904,7 +904,7 @@ random_buildings.build_next_to_tree = function( pos )
          -- no tree?
          if( not( pos_tree )) then
             print( "Aborting placement of lumberjack house at "..minetest.serialize( pos ).." due to lack of tree!");
-            return;
+--            return;
          end
       end
 
@@ -957,15 +957,19 @@ random_buildings.build_next_to_tree = function( pos )
          if( result.status == "ok" ) then
             minetest.chat_send_player( pos.name, "Build house at position "..minetest.serialize( result )..
                      ". Selected "..( building_name or "?" ).." with mirror = "..tostring( mirror ).." and rotation = "..tostring( rotate )..".");
+            print( "[Mod random_buildings] Build house at position "..minetest.serialize( result )..
+                     ". Selected "..( building_name or "?" ).." with mirror = "..tostring( mirror ).." and rotation = "..tostring( rotate )..".");
          else
             -- pos contains the reason for the failure
             minetest.chat_send_player( pos.name, "FAILED to build house at position "..minetest.serialize( result )..".");
+            print( "[Mod random_buildings] FAILED to build house at position "..minetest.serialize( result )..".");
          end
       end
 
       -- try building again - 20 seconds later
       if( result.status == "need_to_wait" ) then
          minetest.after( 20, random_buildings.build_next_to_tree, {x=pos2.x,y=pos2.y,z=pos2.z,typ=pos.typ,name=pos.name, last_status = result.status} );
+         print("[Mod random_buildings] Waiting for 20 seconds for the land to load at "..minetest.serialize( {x=pos2.x,y=pos2.y,z=pos2.z,typ=pos.typ,name=pos.name, last_status = result.status} ));
       end
    end
 end
