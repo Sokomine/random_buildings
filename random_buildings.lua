@@ -638,12 +638,12 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
       target_height = 2;
    end
    -- no insanely high positions above the tree/start position
-   if( target_height > (pos.y+12)) then
-      target_height = pos.y + 12;
+   if( target_height > (pos.y+19)) then
+      target_height = pos.y + 19;
    end 
    -- further sanity check to avoid ending up in a deep hole created by cavegen
-   if( target_height < (pos.y-12)) then
-      target_height = pos.y - 12;
+   if( target_height < (pos.y-19)) then
+      target_height = pos.y - 19;
    end 
    print( " Trying position "..minetest.serialize( pos ).." height: "..tostring( height-20 ).." new height: "..tostring( (pos.y+(height-19))));
    print( " Actual target position: "..minetest.serialize( target_height ));
@@ -789,6 +789,9 @@ random_buildings.convert_to_table = function( value )
    end
 
    if( count > 0 ) then
+
+      -- make sure there is at least one row free in front of the entrance
+     min.x = min.x - 1;
 
       -- the maximum might be affected by the offset as well
       max          = { x=( tonumber(max.x) - tonumber( min.x)),
