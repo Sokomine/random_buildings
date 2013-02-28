@@ -156,7 +156,7 @@ end
 random_buildings.spawn_trader = function( pos, name )
 
    -- slightly above the position of the player so that it does not end up in a solid block
-   local object = minetest.env:add_entity( {x=pos.x, y=(pos.y+0.5), z=pos.z}, "random_buildings:npc_trader_"..name.."__default" );
+   local object = minetest.env:add_entity( {x=pos.x, y=(pos.y+1.5), z=pos.z}, "random_buildings:npc_trader_"..name.."__default" );
    if object ~= nil then
       object:setyaw( -1.14 );
    end

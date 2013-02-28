@@ -60,7 +60,12 @@ end
 
 
 -- rotate has to have values from 0-3 (same as in transform_pos)
-random_buildings.transform_facedir = function( param2, rotate, mirror )
+random_buildings.transform_facedir = function( param2, rotate, mirror, node_name )
+
+   if( not(param2)) then
+      print( "[Mod random_buildings] ERROR: param2 is NIL while transforming "..tostring( node_name ).."!");
+      return 0;
+   end
 
    if(     rotate == 1 ) then
       param2 = param2 + 1;
@@ -100,12 +105,21 @@ random_buildings.transform_param2 = function( param2, rotate, mirror, node_name 
 
    if(      minetest.registered_nodes[ node_name ].paramtype2 == "facedir" ) then
 
+      if( not( param2 )) then
+         print( "[Mod random_buildings] ERROR while rotating "..tostring( node_name ));
+         param2 = 0;
+      end
       return random_buildings.transform_facedir( param2, rotate, mirror, node_name );
 
    -- wallmounted objects attached to ceiling or bottom (e.g. torches, ladders) ought NOT to be rotated
    -- unfortionately, 0 and 1 stand for wallmounted; this makes rotation a bit more complicated
    elseif( minetest.registered_nodes[ node_name ].paramtype2 == "wallmounted" ) then
 
+      if( not( param2 )) then
+         print( "[Mod random_buildings] ERROR while rotating "..tostring( node_name ));
+         return 0;
+      end
+     
       -- attached to bottom or ceiling: no rotation!
       if( param2==0 or param2==1 ) then
          return param2;
@@ -246,7 +260,8 @@ random_buildings.build_pillar = function( pos, material, material_top, max_heigh
                  -- same with leaves
               or node_to_check.name == "default:leaves" 
                  -- mostly flowers; covers liquids as well
-              or minetest.registered_nodes[ node_to_check.name ].walkable == false) then
+              or (   minetest.registered_nodes[ node_to_check.name ]
+                and  minetest.registered_nodes[ node_to_check.name ].walkable == false)) then
        
          -- enlarge the pillar by one
          local node_name = material;
@@ -473,7 +488,8 @@ random_buildings.check_if_free = function( pos, max )
                      or node.name == 'default:leaves'
                      or node.name == 'default:cactus' 
                         -- flowers and the like - they can spawn again later if they want to
-                     or minetest.registered_nodes[ node.name ].walkable == false
+                     or (    minetest.registered_nodes[ node.name ] ~= nil
+                         and minetest.registered_nodes[ node.name ].walkable == false )
                      ) then
 
                   ignored_nodes = ignored_nodes + 1;
@@ -482,16 +498,20 @@ random_buildings.check_if_free = function( pos, max )
                elseif( string.find( node.name, "moretrees:" )
                   and  string.find( node.name, "leaves" )) then
 
-                  print( "Found and ignoring leaves: "..(node.name or "?" ));
+                  print( "[Mod random_buildings] Found and ignoring leaves: "..(node.name or "?" ));
 
                -- snow and ice do not hinder building a house
                elseif( string.find( node.name, "snow:" )) then
 
-                  print( "Found and ignoring snow: "..(node.name or "?" ));
+                  print( "[Mod random_buildings] Found and ignoring snow: "..(node.name or "?" ));
+
+               elseif( string.find( node.name, "shells:" )) then
+
+                  print( "[Mod random_buildings] Found and ignoring shells: "..(node.name or "?" ));
 
                -- unknown nodes - possibly placed by a player; in this case: abort the operation
                else
-                  print( "ERROR! Building of house aborted. Found "..(node.name or "?"));
+                  print( "[Mod random_buildings] ERROR! Building of house aborted. Found "..(node.name or "?"));
                   wrong_nodes = wrong_nodes + 1;
                   return { status = "aborted", add_height = 0, reason = node.name};
                end
@@ -512,8 +532,8 @@ random_buildings.check_if_free = function( pos, max )
    end
   
      
-   print( "Need to remove: "..tostring( need_to_remove ).." wrong nodes: "..tostring( wrong_nodes ).." ignored nodes: "..tostring( ignored_nodes ));
-   print( "New height: "..tostring( pos.y + move_up ));
+   print( "[Mod random_buildings] Need to remove: "..tostring( need_to_remove ).." wrong nodes: "..tostring( wrong_nodes ).." ignored nodes: "..tostring( ignored_nodes ));
+   print( "[Mod random_buildings] New height: "..tostring( pos.y + move_up ));
    return { status = "ok", add_height = move_up };
 end
 
@@ -567,7 +587,7 @@ random_buildings.get_platform_materials = function( pos, max )
                found_water  = found_water + 1;
             else
                found_misc   = found_misc + 1;
-               print( " Found misc block: "..tostring( node.name ));
+               print( " [Mod random_buildings] Found misc block: "..tostring( node.name ));
             end
             found_sum = found_sum + 1;
          end
@@ -577,7 +597,7 @@ random_buildings.get_platform_materials = function( pos, max )
 --         print("   Found: "..tostring( minetest.env:get_node(  {x=x1, y=(pos.y+(20-height)), z=z1}).name));
       end
     end
-    print("Found sand: "..tostring( found_sand ).." desert: "..tostring( found_desert )..
+    print("[Mod random_buildings] Found sand: "..tostring( found_sand ).." desert: "..tostring( found_desert )..
               " grass: "..tostring( found_dirt ).." misc: "..tostring(found_misc ).." water: "..tostring( found_water )..
                 " sum: "..tostring( found_sum  ));
  
@@ -615,6 +635,16 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
 
    -- find out what the dimensions of the desired building are
    local selected_building = random_buildings.building[ building_name ];
+
+   if( not( selected_building )) then
+      print( "[Mod random_buildings] ERROR: spawn_building: missing building name. got building_name = "..tostring( building_name ));
+      return { x=pos.x, y=pos.y, z=pos.z, status = "aborted", reason = 'building not found' };
+   end
+   if( not( replacements )) then
+      print( "[Mod random_buildings] ERROR: spawn_building: missing replacement list. got replacements = "..minetest.serialize( replacements ));
+      return { x=pos.x, y=pos.y, z=pos.z, status = "aborted", reason = 'building not found' };
+   end
+
 
    -- we need this information to find out how much space needs to be reserved
    local max = {};
@@ -821,7 +851,7 @@ random_buildings.import_building = function( filename )
    local file, err = io.open( minetest.get_modpath('random_buildings')..'/schems/'..filename..'.we', "rb");
    if( err ~= nil ) then
 
-      print( "[MOD random_buildings] File/Building '"..(filename or "?" )..".we not found.");
+      print( "[MOD random_buildings] Error: file/building '"..(filename or "?" )..".we could not be imported: "..minetest.serialize( err ));
       return;
 
    end
@@ -833,15 +863,16 @@ random_buildings.import_building = function( filename )
    --print("Converted: "..minetest.serialize( random_buildings.building[ filename ] ));
 end
 
-print( "[MOD random_buildings] Importing houses...");
-random_buildings.import_building( "haus1");
-random_buildings.import_building( "haus2");
-random_buildings.import_building( "haus3");
-random_buildings.import_building( "haus4");
-random_buildings.import_building( "haus5");
-random_buildings.import_building( "haus6");
-random_buildings.import_building( "haus7");
-random_buildings.import_building( "haus8");
+print( "[MOD random_buildings] Importing lumberjack houses...");
+for i=1,8 do
+  random_buildings.import_building( "haus"..tostring(i));
+end
+
+
+print( "[MOD random_buildings] Importing clay trader houses...");
+for i=1,5 do
+  random_buildings.import_building( "trader_clay_"..tostring(i));
+end
 
 
 -----------------------------------------------------------------------------------------------------------------
@@ -880,10 +911,11 @@ minetest.register_chatcommand("thaus", {
 
                 minetest.chat_send_player(name, "Searching for a position to place a house.");
 
-                local possible_types = {'birch','spruce','jungletree','fir','beech','apple_tree','oak','sequoia','palm','pine', 'willow','rubber_tree'};
-                local typ = possible_types[ math.random( 1, #possible_types )];
+--                local possible_types = {'birch','spruce','jungletree','fir','beech','apple_tree','oak','sequoia','palm','pine', 'willow','rubber_tree'};
+--                local typ = possible_types[ math.random( 1, #possible_types )];
 
-                random_buildings.build_next_to_tree( {x=pos.x, y=pos.y, z=pos.z, typ = "moretrees:"..typ.."_trunk", name = name } );
+--                random_buildings.build_next_to_tree( {x=pos.x, y=pos.y, z=pos.z, typ = "moretrees:"..typ.."_trunk", name = name } );
+                random_buildings.build_trader_clay(  {x=pos.x, y=pos.y, z=pos.z } );
              end
 });
 
@@ -903,8 +935,8 @@ random_buildings.build_next_to_tree = function( pos )
          local pos_tree = minetest.env:find_node_near(pos, 5, pos.typ);
          -- no tree?
          if( not( pos_tree )) then
-            print( "Aborting placement of lumberjack house at "..minetest.serialize( pos ).." due to lack of tree!");
---            return;
+            print( "[Mod random_buildings] Aborting placement of lumberjack house at "..minetest.serialize( pos ).." due to lack of tree!");
+            return;
          end
       end
 
@@ -921,57 +953,119 @@ random_buildings.build_next_to_tree = function( pos )
 
       -- TODO: select from list of available houses
       local building_name = 'haus'..tostring( math.random(1,8));
-      local mirror = math.random(0,1);
-      local rotate = math.random(0,3); 
-
-      mirror = 0; -- TODO
-
-      local result;
-      local pos2;
-
-      local i = 0;
-      local found = false;
-      -- try up to 3 times
-      if( pos.last_status == nil ) then
-
-         while( i < 3 and found == false) do
-
-            -- get a random position at least 5 nodes away from the trunk of the tree
-            pos2 = random_buildings.get_random_position( pos, 5, 20);
-   
-            result = random_buildings.spawn_building( {x=pos2.x,y=pos2.y,z=pos2.z}, building_name, rotate, mirror, replacements, typ.."_wood" );
-
-            i = i + 1;
-            -- status "aborted" happens if there is something in the way
-            if( result.status ~= "aborted" ) then
-               found = true;
-            end
-         end
-      else
-         pos2   = {x=pos.x,y=pos.y,z=pos.z};
-         result = random_buildings.spawn_building( {x=pos2.x,y=pos2.y,z=pos2.z}, building_name, rotate, mirror, replacements, typ.."_wood" );
-      end
-
- 
-      if( pos.name ~= nil ) then
-         if( result.status == "ok" ) then
-            minetest.chat_send_player( pos.name, "Build house at position "..minetest.serialize( result )..
-                     ". Selected "..( building_name or "?" ).." with mirror = "..tostring( mirror ).." and rotation = "..tostring( rotate )..".");
-            print( "[Mod random_buildings] Build house at position "..minetest.serialize( result )..
-                     ". Selected "..( building_name or "?" ).." with mirror = "..tostring( mirror ).." and rotation = "..tostring( rotate )..".");
-         else
-            -- pos contains the reason for the failure
-            minetest.chat_send_player( pos.name, "FAILED to build house at position "..minetest.serialize( result )..".");
-            print( "[Mod random_buildings] FAILED to build house at position "..minetest.serialize( result )..".");
-         end
-      end
-
-      -- try building again - 20 seconds later
-      if( result.status == "need_to_wait" ) then
-         minetest.after( 20, random_buildings.build_next_to_tree, {x=pos2.x,y=pos2.y,z=pos2.z,typ=pos.typ,name=pos.name, last_status = result.status} );
-         print("[Mod random_buildings] Waiting for 20 seconds for the land to load at "..minetest.serialize( {x=pos2.x,y=pos2.y,z=pos2.z,typ=pos.typ,name=pos.name, last_status = result.status} ));
-      end
+      random_buildings.build_trader_house( {x=pos.x, y=pos.y, z=pos.z, bn=building_name, rp=replacements, typ=pos.typ, trader=typ..'_wood'});
    end
 end
 
+
+
+random_buildings.build_trader_clay = function( pos )
+
+   local replacements = {};
+   local material1 = { 'brick', 'sandstone', 'desert_stone', 'clay' };
+   local material2 = { 'stone', 'brick', 'sandstone', 'desert_stone', 'clay' };
+   local m1 = material1[ math.random(1,#material1 )];
+   local m2 = material2[ math.random(1,#material2 )];
+   -- reduce the probability of having walls and pillars of the same material but do not forbid it entirely
+   if( m2 == m1 ) then
+      m2 = material2[ math.random(1,#material2 )];
+   end
+
+   replacements[ 'default:brick'     ] = 'default:'..m1;
+   -- dsert_stone and clay do not have slabs; use sandstone instead
+   if( m1 ~= 'desert_stone' and m1 ~= 'clay' ) then
+      replacements[ 'default:slab_brick'] = 'default:slab_'..m1;
+   else
+      replacements[ 'default:slab_brick'] = 'default:slab_sandstone';
+   end
+
+   replacements[ 'default:stone'     ] = 'default:'..m2;
+   replacements[ 'default:cobble'    ] = 'default:'..m2;
+
+ 
+   -- desert_stone and clay have no slabs in the default game
+   if( m2 == 'desert_stone' or m2 == 'clay' ) then
+      m2 =  'sandstone';
+   end
+        
+   replacements[ 'default:slab_stone'] = 'default:slab_'..m2;
+   replacements[ 'stairs:stair_stone'] = 'stairs:stair_'..m2;
+
+
+   -- if moretrees is available then change the wooden planks to other wood types as well
+   if( minetest.get_modpath("moretrees") ~= nil and math.random(1,2)==2) then
+
+      local possible_types = {'birch','spruce','jungletree','fir','beech','apple_tree','oak','sequoia','palm','pine', 'willow','rubber_tree'};
+      local typ = possible_types[ math.random( 1, #possible_types )];
+      replacements[ 'moretrees:TYP_planks' ]         = 'moretrees:'..typ..'_planks';
+   end
+
+
+   local building_name = 'trader_clay_'..tostring( math.random(1,5));
+   random_buildings.build_trader_house( {x=pos.x, y=pos.y, z=pos.z, bn=building_name, rp=replacements, typ=pos.typ, trader='clay'});
+end
+
+
+
+
+random_buildings.build_trader_house = function( pos )
+
+   local building_name = pos.bn;
+   local replacements  = pos.rp;
+   local typ           = pos.typ;
+   local trader_typ    = pos.trader;
+
+   --print( "Trying to build "..tostring( building_name ));
+   local mirror = math.random(0,1);
+   local rotate = math.random(0,3); 
+
+   mirror = 0; -- TODO
+
+   local result;
+   local pos2;
+
+   local i = 0;
+   local found = false;
+   -- try up to 3 times
+   if( pos.last_status == nil ) then
+
+      while( i < 3 and found == false) do
+
+         -- get a random position at least 5 nodes away from the trunk of the tree
+         pos2 = random_buildings.get_random_position( pos, 5, 20);
+
+         result = random_buildings.spawn_building( {x=pos2.x,y=pos2.y,z=pos2.z}, building_name, rotate, mirror, replacements, trader_typ);
+
+         i = i + 1;
+         -- status "aborted" happens if there is something in the way
+         if( result.status ~= "aborted" ) then
+            found = true;
+         end
+      end
+   else
+      pos2   = {x=pos.x,y=pos.y,z=pos.z};
+      result = random_buildings.spawn_building( {x=pos2.x,y=pos2.y,z=pos2.z}, building_name, rotate, mirror, replacements, trader_typ );
+   end
+
+ 
+   if( pos.name ~= nil ) then
+      if( result.status == "ok" ) then
+         minetest.chat_send_player( pos.name, "Build house at position "..minetest.serialize( result )..
+               ". Selected "..( building_name or "?" ).." with mirror = "..tostring( mirror ).." and rotation = "..tostring( rotate )..".");
+         print( "[Mod random_buildings] Build house at position "..minetest.serialize( result )..
+               ". Selected "..( building_name or "?" ).." with mirror = "..tostring( mirror ).." and rotation = "..tostring( rotate )..".");
+      else
+         -- pos contains the reason for the failure
+         minetest.chat_send_player( pos.name, "FAILED to build house at position "..minetest.serialize( result )..".");
+         print( "[Mod random_buildings] FAILED to build house at position "..minetest.serialize( result )..".");
+      end
+   end
+
+   -- try building again - 20 seconds later
+   if( result.status == "need_to_wait" ) then
+      minetest.after( 20, random_buildings.build_trader_house, {x=pos2.x,y=pos2.y,z=pos2.z, name=pos.name, last_status = result.status, 
+                              bn = building_name, rp = pos.rp, typ = pos.typ, trader = pos.trader } );
+      print("[Mod random_buildings] Waiting for 20 seconds for the land to load at "..minetest.serialize( {x=pos2.x,y=pos2.y,z=pos2.z, typ=pos.typ, name=pos.name, last_status = result.status} ));
+   end
+end
 
