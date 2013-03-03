@@ -178,7 +178,15 @@ minetest.register_node("random_buildings:feldweg", {
 	legacy_facedir_simple = true,
         is_ground_content = true,
         groups = {crumbly=3},
-        drop = 'default:dirt',
+        sounds = default.node_sound_dirt_defaults,
+})
+
+minetest.register_node("random_buildings:loam", {
+        description = "loam",
+        tiles = {"random_buildings_loam.png"},
+	groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
+        is_ground_content = true,
+        groups = {crumbly=3},
         sounds = default.node_sound_dirt_defaults,
 })
 
