@@ -191,6 +191,15 @@ minetest.register_node("random_buildings:loam", {
 })
 
 
+minetest.register_node("random_buildings:support", {
+        description = "support structure for buildings",
+        tiles = {"random_buildings_support.png"},
+	groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
+        walkable = false,
+        paramtype = "light",
+        drawtype = "plantlike",
+})
+
 -- crafts
 minetest.register_craft({
 	output = "random_buildings:bed_foot",
