@@ -147,40 +147,63 @@ end
 
 -- returns NIL if the area has not been loaded/generated entirely yet
 -- returns FALSE if the building could not be built due to area not compleately generated/loaded
-random_buildings.build_building = function( start_pos, building_name, rotate, mirror, platform_materials, replace_material )
+-- action: 0: normal building
+-- action>0 : check if blocks are still there
+-- action == 1: delete blocks
+random_buildings.build_building = function( start_pos, building_name, rotate, mirror, platform_materials, replace_material, only_do_these_materials, action )
  
+   --print( 'start_pos: '..minetest.serialize( start_pos )..' building_name: '..tostring( building_name )..' rotate: '..tostring( rotate ));
+
    local selected_building = random_buildings.building[ building_name ];
 
    local max    = { x = selected_building.max.x, y = selected_building.max.y, z = selected_building.max.z };
    local min    = { x = selected_building.min.x, y = selected_building.min.y, z = selected_building.min.z };
 
-   -- houses floating in the air would be unrealistic
-   if( not( random_buildings.build_support_structure( { x=start_pos.x,y=start_pos.y,z=start_pos.z}, {x=max.x, y=max.y,z=max.z},
-                                             platform_materials.platform, platform_materials.pillars, platform_materials.walls, 1, 25, 2, rotate ))) then
-      --print( "building of support structure failed" );
-      return false;
-   end
 
    local nodename;
    local param2;
    local pos = {x=0,y=0,z=0};
    local i, j, k, orig_pos;
 
-   -- nodes of the type wallmounted (mostly torches and ladders) will be placed last to make sure what they connect to exists
+
    local build_immediate = {};
-   local build_later     = {};
-   for k,v in pairs( selected_building.nodes ) do
-      if( v.node ~= nil and minetest.registered_nodes[ v.node ] ~= nil and  minetest.registered_nodes[ v.node ].paramtype2 == "wallmounted" ) then
-         table.insert( build_immediate, k );
-      else
-         table.insert( build_later,     k );
+   -- replace one type of maaterial and ignore the rest); in this case, do NOT build a support structure (it has already been built)
+   if( only_do_these_materials ~= nil ) then
+
+      -- there might be rotated versions of this node
+      for i,m in pairs( only_do_these_materials ) do
+         for k,v in pairs( selected_building.nodes ) do
+            if( v.node ~= nil and v.node == minetest.registered_nodes[ v.node ] ~= nil and  i==v.node ) then
+               table.insert( build_immediate, k );
+            end
+         end
+      end
+ 
+   -- normal building - build all nodes including support plattform
+   else
+      -- houses floating in the air would be unrealistic
+      if( not( random_buildings.build_support_structure( { x=start_pos.x,y=start_pos.y,z=start_pos.z}, {x=max.x, y=max.y,z=max.z},
+                                                platform_materials.platform, platform_materials.pillars, platform_materials.walls, 1, 25, 2, rotate ))) then
+         --print( "building of support structure failed" );
+         return false;
+      end
+ 
+      -- nodes of the type wallmounted (mostly torches and ladders) will be placed last to make sure what they connect to exists
+      local build_later     = {};
+      for k,v in pairs( selected_building.nodes ) do
+         if( v.node ~= nil and minetest.registered_nodes[ v.node ] ~= nil and  minetest.registered_nodes[ v.node ].paramtype2 == "wallmounted" ) then
+            table.insert( build_immediate, k );
+         else
+            table.insert( build_later,     k );
+         end
+      end
+      -- append those nodes that ought to be built last
+      for i, j in ipairs( build_later ) do
+         table.insert( build_immediate, j );
       end
    end
-   -- append those nodes that ought to be built last
-   for i, j in ipairs( build_later ) do
-      table.insert( build_immediate, j );
-   end
 
+   local nodes_found = {};
    
    --for k,v in pairs( selected_building.nodes ) do
 
@@ -209,8 +232,38 @@ random_buildings.build_building = function( start_pos, building_name, rotate, mi
                                                  z = (tonumber( orig_pos.z ) - tonumber( min.z )),
                                                 }, start_pos, max, mirror, rotate );
 
-         --print("Would now place node "..tostring( nodename ).." at position "..minetest.serialize( pos )..".");
-         minetest.env:add_node( pos, { type="node", name = nodename, param2 = param2});
+         -- if check or check&remove are asked for
+         if( action > 0 ) then
+            local node_is_there = minetest.env:get_node( pos);
+            -- if the node is still there then remember that (dirt/dirt_with_grass is not recognized)
+            if( node_is_there ~= nil and node_is_there.name ~= 'ignore' and node_is_there.name == nodename ) then
+               if( not( nodes_found[ nodename ] )) then
+                  nodes_found[ nodename ] = 1;
+               else
+                  nodes_found[ nodename ] = nodes_found[ nodename ] + 1;
+               end
+
+               -- remove the node if it was found and removal was requested
+               if( action==2 ) then
+                  minetest.env:remove_node( pos ); 
+               end
+            end
+
+            -- remove support structure when removing the building
+            if( action==2 and node_is_there ~= nil and node_is_there.name ~= 'ignore' and node_is_there.name == 'random_buildings:support' ) then
+               minetest.env:remove_node( pos ); 
+            end
+          
+            -- replace only a limited amound of blocks
+--            if( action==3 and node_is_there ~= nil and node_is_there.name ~= 'ignore' and node_is_there.name == 'random_buildings:support' 
+--                and material_limited[ nodename ]>0 ) then
+
+
+         -- normal operation: place the node
+         else
+            --print("Would now place node "..tostring( nodename ).." at position "..minetest.serialize( pos )..".");
+            minetest.env:add_node( pos, { type="node", name = nodename, param2 = param2});
+         end
       
          -- if it is a chest, fill it with some stuff
          if( nodename == 'default:chest' ) then
@@ -489,7 +542,8 @@ random_buildings.check_if_free = function( pos, max )
                      or node.name == 'default:cactus' 
                         -- flowers and the like - they can spawn again later if they want to
                      or (    minetest.registered_nodes[ node.name ] ~= nil
-                         and minetest.registered_nodes[ node.name ].walkable == false )
+                         and minetest.registered_nodes[ node.name ].walkable == false 
+                         and node.name ~= 'random_buildings:support')
                      ) then
 
                   ignored_nodes = ignored_nodes + 1;
@@ -707,7 +761,7 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
    random_buildings.make_room( pos, max );
    
    -- actually build the building
-   if( not( random_buildings.build_building( pos, building_name, rotate, mirror, platform_materials, replacements ))) then
+   if( not( random_buildings.build_building( pos, building_name, rotate, mirror, platform_materials, replacements, nil, 0 ))) then
       --print("in spawn_building 4");
       return { x=pos.x, y=pos.y, z=pos.z, status = "need_to_wait" };
    end
@@ -839,7 +893,7 @@ end
 
 
 
-random_buildings.import_building = function( filename )
+random_buildings.import_building = function( filename, menu_path )
 
    if( not( random_buildings.building )) then
     
@@ -860,24 +914,377 @@ random_buildings.import_building = function( filename )
    file:close();
 
    random_buildings.building[ filename ] = random_buildings.convert_to_table( value );
+   random_buildings.building[ filename ].menu_path  = menu_path;
    --print("Converted: "..minetest.serialize( random_buildings.building[ filename ] ));
 end
 
+
+
 print( "[MOD random_buildings] Importing lumberjack houses...");
 for i=1,8 do
-  random_buildings.import_building( "haus"..tostring(i));
+  random_buildings.import_building( "haus"..tostring(i), {'trader', 'lumberjack', 'haus'..tostring(i)});
 end
 
 
 print( "[MOD random_buildings] Importing clay trader houses...");
 for i=1,5 do
-  random_buildings.import_building( "trader_clay_"..tostring(i));
+  random_buildings.import_building( "trader_clay_"..tostring(i), {'trader', 'clay', 'trader_clay_'..tostring(i)});
 end
 
+print( "[MOD random_buildings] Importing farm houses...");
+for i=1,7 do
+  random_buildings.import_building( "farm_tiny_"..tostring(i), {'medieval','small farm', 'farm_tiny_'..tostring(i)} );
+end
+for i,v in ipairs( {'ernhaus_wood','ernhaus_long_roof','ernhaus_second_floor','small_three_stories','hakenhof','zweiseithof'} ) do
+  random_buildings.import_building( "farm_"..v, {'medieval','full farm', 'farm_'..v});
+end
+
+-- TODO: more buildings needed
+print( "[MOD random_buildings] Importing infrastructure buildings for villages...");
+  random_buildings.import_building( "infrastructure_taverne_1", {'medieval','tavern', '..taverne_1_'} );
 
 -----------------------------------------------------------------------------------------------------------------
 -- interface for manual placement of houses 
 -----------------------------------------------------------------------------------------------------------------
+
+-- TODO: gewuenschtes gebaeude uebergeben
+-- built support platform and scaffholding where building will be built
+minetest.build_scaffolding = function( pos, player, building_name )
+
+   local name = player:get_player_name();
+
+   -- rotate the building so that it faces the player
+   local node = minetest.env:get_node( pos );
+   local meta = minetest.env:get_meta( pos );
+   local inv  = meta:get_inventory();
+
+   local start_pos = {x=pos.x, y=pos.y, z=pos.z};
+
+   local mirror = math.random(0,1);
+   mirror = 0; -- TODO
+
+   local selected_building = random_buildings.building[ building_name ];
+
+   local max    = { x = selected_building.max.x, y = selected_building.max.y, z = selected_building.max.z };
+--   local min    = { x = selected_building.min.x, y = selected_building.min.y, z = selected_building.min.z };
+
+-- TODO: the rotation may not fit; the buildings may have been rotated when they where saved...
+   -- make sure the building always extends forward and to the right of the player
+   local rotate = 0;
+   if(     node.param2 == 0 ) then rotate = 3;   -- z gets larger
+   elseif( node.param2 == 1 ) then rotate = 0;  start_pos.z = start_pos.z - max.z; -- x gets larger  
+   elseif( node.param2 == 2 ) then rotate = 1;  start_pos.z = start_pos.z - max.x; start_pos.x = start_pos.x - max.z;-- z gets smaller 
+   elseif( node.param2 == 3 ) then rotate = 2;  start_pos.x = start_pos.x - max.x; -- x gets smaller 
+   end
+ minetest.chat_send_player( name, "Facedir: "..minetest.serialize( node.param2 ).." rotate: "..tostring( rotate ));
+
+   -- at the beginning, *each* node is replaced by a scaffolding-like support structure
+   local replacements = {};
+   local node_needed_list = {};
+   for k,v in pairs( random_buildings.building[ building_name ].nodes ) do
+      replacements[ v.node ] = 'random_buildings:support'; 
+
+      local node_needed = v.node;   -- name of the node we are working on
+      local anz         = #v.posx;  -- how many of that type do we need?
+      -- the workers supply the building with free dirt
+      if(     v.node == 'default:dirt'
+           or v.node == 'default:dirt_with_grass' 
+           -- ignore the upper parts of doors
+           or v.node == 'doors:door_wood_t_1'
+           or v.node == 'doors:door_wood_t_2' ) then
+        anz = 0;
+      -- the lower part of the door counts as one door
+      elseif( v.node == 'doors:door_wood_b_1' 
+           or v.node == 'doors:door_wood_b_2' ) then
+        node_needed = 'doors:door_wood';
+      -- for this we need a hoe
+      elseif( v.node == 'farming:soil'
+           or v.node == 'farming:soil_wet'
+           or v.node == 'farming:cotton'
+           or v.node == 'farming:cotton_1'
+           or v.node == 'farming:cotton_2' ) then
+        anz = 1;
+        node_needed = 'farming:hoe_steel';
+        -- one hoe is sufficient
+        if( inv:contains_item( 'needed', stack)) then
+           anz = 0;
+        end
+      -- water comes in buckets; one is enough (they can refill it...in theory)
+      elseif( v.node == 'default:water_source' ) then
+         anz = 1;
+         node_needed = 'bucket:bucket_water';
+      -- same with lava
+      elseif( v.node == 'default:lava_source' ) then
+         anz = 1;
+         node_needed = 'bucket:bucket_lava';
+      -- in the farm_tiny_?.we buildings, sandstone is used for the floor, and clay for the lower walls
+      elseif( v.node == 'default:sandstone' 
+           or v.node == 'default:clay'
+           or v.node == 'random_buildings:straw_ground' ) then
+         node_needed = 'random_buildings:loam';
+      -- these chests are diffrent so that they can be filled differently by fill_chests.lua
+      elseif( v.node == 'random_buildings:chest_private' 
+           or v.node == 'random_buildings:chest_work' 
+           or v.node == 'random_buildings:chest_storage' ) then
+         node_needed = 'default:chest'; 
+      end
+      -- TODO: replace default:tree and default:wood with the local wood the village is specialized on?
+      -- TODO: combine bed_foot and bed_head into one to save space?
+
+      -- list the items as needed in the suitable fields
+      if( anz > 0 ) then
+
+         -- avoid new stacks for nodes with diffrent facedir
+         if( not(node_needed_list[ node_needed ] )) then
+            node_needed_list[ node_needed ] = anz;
+         else
+            node_needed_list[ node_needed ] = node_needed_list[ node_needed ] + anz;
+         end
+
+      end
+   end 
+
+   -- insert full stacks into the list of needed things
+   for k, v in pairs(node_needed_list) do
+      inv:add_item("needed", k.." "..node_needed_list[ k ]);
+   end
+
+   -- default replacements that will always be supplied
+   -- the inhabitants have enough dirt to spare
+   replacements[ 'default:dirt'            ] = 'default:dirt';
+   replacements[ 'default:dirt_with_grass' ] = 'default:dirt';
+   -- soil has not been worked on yet and thus is just dirt
+   replacements[ 'farming:soil'     ] = 'default:dirt';
+   replacements[ 'farming:soil_wet' ] = 'default:dirt';
+   -- weed can be made to grow everywhere..so why not on dirt
+   replacements[ 'farming:cotton'   ] = 'farming:weed'; 
+   replacements[ 'farming:cotton_1' ] = 'farming:weed'; 
+   replacements[ 'farming:cotton_2' ] = 'farming:weed'; 
+
+   --print( 'nodes: '..minetest.serialize( random_buildings.building[ building_name ].nodes ))
+   --print( 'replacements: '..minetest.serialize( replacements )); 
+
+   -- save the data for later removal/improvement of the building in the chest
+   meta:set_string( 'start_pos', minetest.serialize( start_pos ) );
+   -- building_name has already been saved
+   meta:set_int( 'rotate', rotate );
+   meta:set_int( 'mirror', mirror );
+   meta:set_string( 'replacements', minetest.serialize( replacements ));
+   -- the replacements are not yet of much intrest
+   local result = random_buildings.spawn_building( start_pos, building_name, rotate, mirror, replacements, nil); -- do not spawn an inhabitant yet
+   -- in case spawn_building decided to place the building higher
+   meta:set_string( 'start_pos', minetest.serialize( {x=result.x, y=result.y, z=result.z}) );
+
+   if( result.status == 'aborted' ) then
+      minetest.chat_send_player(name, "Could not build here! Reason: "..tostring( result.reason or 'unknown'));
+   elseif( result.status == 'need_to_wait' ) then
+      minetest.chat_send_player(name, "The terrain has not been generated/loaded completely. Please wait a moment and try again!");
+   elseif( result.status ~= 'ok' ) then
+      minetest.chat_send_player(name, "Error: Could not build. Status: "..tostring( result.reason or 'unknown' ));
+   else
+      minetest.chat_send_player(name, "Building of scaffolding for building finished. Status: "..minetest.serialize( result ));
+   end
+
+
+   -- TODO: water_source durch bucket:bucket_water ersetzen
+   -- these cover most of what the building needs
+   --only_do_these_materials[ 'random_buildings:loam' ] = 'random_buildings:loam';
+   --only_do_these_materials[ 'default:tree'          ] = 'default:tree';
+   --only_do_these_materials[ 'default:wood'          ] = 'default:wood';
+   --only_do_these_materials[ 'random_buildings:roof' ] = 'random_buildings:roof';
+   --only_do_these_materials[ 'random_buildings:roof_connector' ] = 'random_buildings:roof_connector';
+   --only_do_these_materials[ 'random_buildings:roof_flat'      ] = 'random_buildings:roof_flat';
+--random_buildings.build_building( {x=result.x,y=result.y,z=result.z}, building_name, rotate, mirror, {}, only_do_these_materials, only_do_these_materials, 0 );
+   -- TODO: store pos, building_name, rotate, mirror and replacements somewhere suitable
+   -- TODO: include information about who placed the building!
+   return result;
+end
+
+
+random_buildings.update_formspec = function( pos, page, player )
+
+   local meta = minetest.env:get_meta( pos );
+   local current_path = minetest.deserialize( meta:get_string( 'current_path' ) or 'return {}' );
+   local village_name = meta:get_string( 'village' );
+   local village_pos  = minetest.deserialize( meta:get_string( 'village_pos' ));
+   local owner_name   = meta:get_string( 'owner' );
+
+   -- distance from village center
+   local distance = math.floor( math.sqrt( (village_pos.x - pos.x ) * (village_pos.x - pos.x ) 
+                                         + (village_pos.y - pos.y ) * (village_pos.x - pos.y )
+                                         + (village_pos.z - pos.z ) * (village_pos.x - pos.z ) ));
+
+   local button_back = '';
+   if( #current_path > 0 ) then
+      button_back = "button[9.9,0.4;2,0.5;back;Back]";
+   end
+   local depth = #current_path;
+   local formspec = "size[12,10]"..
+                            "label[3.3,0.0;Building box]"..button_back.. -- - "..table.concat( current_path, ' -> ').."]"..
+                            "label[0.3,0.4;Located at:]"      .."label[3.3,0.4;"..(minetest.pos_to_string( pos ) or '?')..", which is "..tostring( distance ).." m away]"
+                                                              .."label[7.3,0.4;from the village center]".. 
+                            "label[0.3,0.8;Part of village:]" .."label[3.3,0.8;"..(village_name or "?").."]"
+                                                              .."label[7.3,0.8;located at "..(minetest.pos_to_string( village_pos ) or '?').."]"..
+                            "label[0.3,1.2;Owned by:]"        .."label[3.3,1.2;"..(owner_name or "?").."]"..
+                            "label[3.3,1.6;Click on a menu entry to select it:]";
+
+
+   local options = {};
+   if( page == 'main') then
+      
+      -- this is not a very efficient way to implement a menu; for this case, it is sufficient
+      for k,v in pairs( random_buildings.building ) do
+         if( k ~= nil and v.menu_path ~= nil and #v.menu_path>0) then
+             local found = true;
+
+             for i,p in ipairs( current_path ) do
+                if( i<=(#v.menu_path )) then
+                   if( v.menu_path[i] ~= p ) then 
+                      found = false;
+                   end
+                end
+             end
+
+             if( found ) then
+                if( #v.menu_path > depth ) then
+                   -- only insert entries we have not found yet
+                   local f2 = false;
+                   for j,ign in ipairs( options ) do
+                      if( ign == v.menu_path[(depth+1)] ) then
+                         f2 = true;
+                      end
+                   end
+                   -- avoid duplicates
+                   if( not( f2 )) then
+                      table.insert( options, v.menu_path[(depth+1)] );
+                   end
+                else
+                   -- found an end node of the menu graph
+                   local building_name = v.menu_path[( depth )];
+
+                   if( not( random_buildings.building[ building_name ])) then
+                      minetest.chat_send_player(player:get_player_name(), "ERROR: Building \""..minetest.serialize( building_name ).."\" does not exist!");
+                      return;
+                   end
+                   meta:set_string( 'building_name', building_name );
+
+                   -- set new formspecs for the input materials - this is taken from towntest
+                   meta:get_inventory():set_size("main", 8)
+                   meta:get_inventory():set_size("needed", 8*5) -- 2 larger than what is displayed - as a reserve for houses with many diffrent nodes
+                   meta:get_inventory():set_size("builder", 2*2)
+                   meta:get_inventory():set_size("lumberjack", 2*2)
+
+                   minetest.build_scaffolding( pos, player, building_name );
+
+                   formspec = "size[12,10]"
+
+--                          "size[10.5,9]"
+                        .."list[current_player;main;0,6;8,4;]"
+
+                        .."label[0,0; items needed:]"
+                        .."list[current_name;needed;0,0.5;8,3;]"
+
+                        .."label[0,3.5; put items here to build:]"
+                        .."list[current_name;main;0,4;8,1;]"
+
+                        .."label[8.5,1; builder:]"
+                        .."list[current_name;builder;8.5,1.5;2,2;]"
+
+                        .."label[8.5,3.5; lumberjack:]"
+                        .."list[current_name;lumberjack;8.5,4;2,2;]"..
+
+                            "label[8.5,6.0;Project:]"   .."label[9.5,6.0;"..(building_name or '?').."]"..
+                            "label[8.5,6.4;Owner:]"     .."label[9.5,6.4;"..(owner_name or "?").."]"..
+                            "label[8.5,6.8;Village:]"   .."label[9.5,6.8;"..(village_name or "?").."]"..
+                            "label[8.5,7.2;located at]" .."label[9.5,7.2; "..(minetest.pos_to_string( village_pos ) or '?').."]"..
+                            "label[8.5,7.6;Distance:]"  .."label[9.5,7.6;"..tostring( distance ).." m]"..
+
+                            "button[9.0,8.5;2,0.5;abort;Abort building]"  .."label[9.5,7.6;"..tostring( distance ).." m]";
+
+
+                   meta:set_string( "formspec", formspec );
+                   return;
+                end
+             end
+         end
+      end
+
+      local i = 0;
+      local x = 0;
+      local y = 0;
+      if( #options < 9 ) then
+         x = x + 4;
+      end
+      -- order alphabeticly
+      table.sort( options, function(a,b) return a < b end );
+
+      for index,k in ipairs( options ) do
+
+         i = i+1;
+
+         -- new column
+         if( y==8 ) then
+            x = x+4;
+            y = 0;
+         end
+
+         formspec = formspec .."button["..(x)..","..(y+2.5)..";4,0.5;selection;"..k.."]"
+         y = y+1;
+         --x = x+4;
+      end
+   end
+
+   meta:set_string( "formspec", formspec );
+end
+
+
+-- TODO: check if it is the owner of the chest/village
+random_buildings.on_receive_fields = function(pos, formname, fields, player)
+
+   local meta = minetest.env:get_meta(pos);
+   
+   -- back button
+   if( fields.back ) then
+
+      local current_path = minetest.deserialize( meta:get_string( 'current_path' ) or 'return {}' );
+
+      table.remove( current_path ); -- revert latest selection
+      meta:set_string( 'current_path', minetest.serialize( current_path ));
+      random_buildings.update_formspec( pos, 'main', player );
+
+   -- menu entry selected
+   elseif( fields.selection ) then
+
+      local current_path = minetest.deserialize( meta:get_string( 'current_path' ) or 'return {}' );
+
+      table.insert( current_path, fields.selection );
+      meta:set_string( 'current_path', minetest.serialize( current_path ));
+      random_buildings.update_formspec( pos, 'main', player );
+   
+   -- abort the building - remove scaffolding
+   elseif( fields.abort ) then
+      local start_pos     = minetest.deserialize( meta:get_string( 'start_pos' ));
+      local building_name = meta:get_string( 'building_name');
+      local rotate        = meta:get_int( 'rotate' );
+      local mirror        = meta:get_int( 'mirror' );
+      local platform_materials = {};
+      local replacements = minetest.deserialize( meta:get_string( 'replacements' ));
+      -- action ist hier remove
+      random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements, nil, 2 );
+
+      -- reset the needed materials in the building chest
+      local inv  = meta:get_inventory();
+      for i=1,inv:get_size("needed") do
+         inv:set_stack("needed", i, nil)
+      end
+
+      meta:set_string( 'current_path', minetest.serialize( {} ));
+      random_buildings.update_formspec( pos, 'main', player );
+   end
+
+end
+
+
 
 minetest.register_node("random_buildings:build", {
 	description = "Building-Spawner",
@@ -887,14 +1294,65 @@ minetest.register_node("random_buildings:build", {
 	groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 	legacy_facedir_simple = true,
         after_place_node = function(pos, placer, itemstack)
-                local replacements = {};
 
-                    
-                local possible_types = {'birch','spruce','jungletree','fir','beech','apple_tree','oak','sequoia','palm','pine', 'willow','rubber_tree'};
-                local typ = possible_types[ math.random( 1, #possible_types )];
+ -- TODO: check if placement is allowed
+      
+           local meta = minetest.env:get_meta( pos );
+           meta:set_string( 'current_path', minetest.serialize( {} ));
+           meta:set_string( 'village',      'BEISPIELSTADT' ); --TODO
+           meta:set_string( 'village_pos',  minetest.serialize( {x=1,y=2,z=3} )); -- TODO
+           meta:set_string( 'owner',        placer:get_player_name());
 
-                random_buildings.build_next_to_tree( {x=pos.x, y=pos.y, z=pos.z, typ = "moretrees:"..typ.."_trunk", name = placer:get_player_name() } );
-        end
+           random_buildings.update_formspec( pos, 'main', placer );
+        end,
+        on_receive_fields = function( pos, formname, fields, player )
+           return random_buildings.on_receive_fields(pos, formname, fields, player);
+        end,
+        -- taken from towntest 
+        allow_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
+                if from_list=="needed" or to_list=="needed" then return 0 end
+                if from_list=="builder" or to_list=="builder" then return 0 end
+                if from_list=="lumberjack" or to_list=="lumberjack" then return 0 end
+                return count
+        end,
+        allow_metadata_inventory_put = function(pos, listname, index, stack, player)
+                if listname=="needed" then return 0 end
+                if listname=="builder" then return 0 end
+                if listname=="lumberjack" then return 0 end
+                return stack:get_count()
+        end,
+        allow_metadata_inventory_take = function(pos, listname, index, stack, player)
+                if listname=="needed" then return 0 end
+                if listname=="builder" then return 0 end
+                if listname=="lumberjack" then return 0 end
+                return stack:get_count()
+        end,
+
+        on_metadata_inventory_put = function(pos, listname, index, stack, player)
+
+            local meta          = minetest.env:get_meta( pos );
+            local start_pos     = minetest.deserialize( meta:get_string( 'start_pos' ));
+            local building_name = meta:get_string( 'building_name');
+            local rotate        = meta:get_int( 'rotate' );
+            local mirror        = meta:get_int( 'mirror' );
+            local platform_materials = {};
+            local replacements = minetest.deserialize( meta:get_string( 'replacements' ));
+
+            if( replacements[ stack:get_name() ]=='random_buildings:support' ) then
+               -- action ist hier remove
+               replacements[ stack:get_name() ] = stack:get_name();
+               random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements, nil, 0 );
+               meta:set_string( 'replacements', minetest.serialize( replacements ));
+               
+               -- this material is no longer needed (or at least less needed)
+               local inv  = meta:get_inventory();
+               -- this material is now no longer needed
+               inv:remove_item( 'main', stack );
+               inv:remove_item( 'needed', stack );
+            end
+
+        end,
+
 })
 
 
