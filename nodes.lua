@@ -269,11 +269,27 @@ minetest.register_node("random_buildings:washing", {
 -- roof parts
 ---------------------------------------------------------------------------------------
 -- a better roof than the normal stairs; can be replaced by stairs:stair_wood
-minetest.register_node("random_buildings:roof", {
-		description = "Roof",
+local roof_parts = {};
+roof_parts['straw'] = {
+		tiles = {"darkage_straw.png","darkage_straw.png","darkage_straw.png","darkage_straw.png","darkage_straw.png","darkage_straw.png"}};
+roof_parts['wood'] = {
+		tiles = {"default_tree.png","default_wood.png","default_wood.png","default_wood.png","default_tree.png","default_tree.png"}};
+roof_parts['black'] = {
+		tiles = {"homedecor_shingles_asphalt.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","homedecor_shingles_asphalt.png"}};
+roof_parts['red'] = {
+		tiles = {"homedecor_shingles_terracotta.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","homedecor_shingles_terracotta.png"}};
+roof_parts['brown'] = {
+		tiles = {"homedecor_shingles_wood.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","homedecor_shingles_wood.png"}};
+
+
+
+for k,v in pairs( roof_parts ) do
+   minetest.register_node("random_buildings:roof_"..k, {
+		description = "Roof "..k,
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
-		tiles = {"default_tree.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","default_tree.png"},
+		--tiles = {"default_tree.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","default_tree.png"},
+		tiles = v.tiles,
 		paramtype = "light",
 		paramtype2 = "facedir",
 		is_ground_content = true,
@@ -294,12 +310,14 @@ minetest.register_node("random_buildings:roof", {
 		},
 	})
 
--- a better roof than the normal stairs; this one is for usage directly on top of walls (it has the form of a stair)
-minetest.register_node("random_buildings:roof_connector", {
-		description = "Roof connector",
+  -- a better roof than the normal stairs; this one is for usage directly on top of walls (it has the form of a stair)
+  minetest.register_node("random_buildings:roof_connector_"..k, {
+		description = "Roof connector "..k,
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
-		tiles = {"default_tree.png","default_wood.png","default_tree.png","default_tree.png","default_wood.png","default_tree.png"},
+		--tiles = {"default_tree.png","default_wood.png","default_tree.png","default_tree.png","default_wood.png","default_tree.png"},
+		--tiles = {"darkage_straw.png","default_wood.png","darkage_straw.png","darkage_straw.png","darkage_straw.png","darkage_straw.png"},
+		tiles = v.tiles,
 		paramtype = "light",
 		paramtype2 = "facedir",
 		is_ground_content = true,
@@ -320,12 +338,14 @@ minetest.register_node("random_buildings:roof_connector", {
 		},
 	})
 
--- this one is the slab version of the above roof
-minetest.register_node("random_buildings:roof_flat", {
-		description = "Roof (flat)",
+  -- this one is the slab version of the above roof
+  minetest.register_node("random_buildings:roof_flat_"..k, {
+		description = "Roof (flat) "..k,
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
-		tiles = {"default_tree.png","default_wood.png","default_tree.png","default_tree.png","default_wood.png","default_tree.png"},
+		--tiles = {"default_tree.png","default_wood.png","default_tree.png","default_tree.png","default_wood.png","default_tree.png"},
+		--tiles = {"darkage_straw.png","default_wood.png","darkage_straw.png","darkage_straw.png","darkage_straw.png","default_tree.png"},
+		tiles = v.tiles,
 		paramtype = "light",
 		paramtype2 = "facedir",
 		is_ground_content = true,
@@ -343,6 +363,7 @@ minetest.register_node("random_buildings:roof_flat", {
 			},
 		},
 	})
+end
 
 
 ---------------------------------------------------------------------------------------
@@ -688,6 +709,13 @@ minetest.register_node("random_buildings:gate_open", {
 ------------------------------------------------------------------------------------------------------------------------------
 
 minetest.register_craft({
+	output = "random_buildings:support",
+	recipe = {
+		{"default:stick", "", "default:stick", }
+        }
+})
+
+minetest.register_craft({
 	output = "random_buildings:bed_foot",
 	recipe = {
 		{"wool:white",    "", "", },
@@ -880,35 +908,17 @@ minetest.register_craft({
 })
 
 -- TODO: include straw
--- TODO: add receipe for straw and support structure
-------------------------------------------minetest.register_node("random_buildings:support", {
---minetest.register_node("random_buildings:bed_foot", {
---minetest.register_node("random_buildings:bed_head", {
---minetest.register_node("random_buildings:sleeping_mat", {
---minetest.register_node("random_buildings:bench", {
---minetest.register_node("random_buildings:table", {
---minetest.register_node("random_buildings:shelf", {
+-- TODO: diffrent types of roof
+-- TODO: add receipe for straw and diffrent types of roof
+-- TODO. move support structure and chests back to random_buildings
+-- TODO: add receipe for straw_ground
 -- the chests do not need receipes since they are only placeholders and not intended to be built by players
 -----minetest.register_node("random_buildings:chest_private", {
 -----minetest.register_node("random_buildings:chest_work", {
 -----minetest.register_node("random_buildings:chest_storage", {
---minetest.register_node("random_buildings:washing", {
---minetest.register_node("random_buildings:roof", {
---minetest.register_node("random_buildings:roof_connector", {
---minetest.register_node("random_buildings:roof_flat", {
---minetest.register_node("random_buildings:wagon_wheel", {
---minetest.register_node("random_buildings:feldweg", {
---minetest.register_node("random_buildings:loam", {
-------------------------------------------minetest.register_node("random_buildings:straw_ground", {
---minetest.register_node("random_buildings:glass_pane", {
---minetest.register_node("random_buildings:window_shutter_open", {
---minetest.register_node("random_buildings:window_shutter_closed", {
---minetest.register_node("random_buildings:half_door", {
---minetest.register_node("random_buildings:half_door_inverted", {
---minetest.register_node("random_buildings:gate_closed", {
-----minetest.register_node("random_buildings:gate_open", 
 
 
+-- TODO: this nodebox needs some more woork
         minetest.register_node("random_buildings:barrel", {
                 description = "barrel",
                 paramtype = "light",
