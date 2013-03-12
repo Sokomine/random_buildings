@@ -77,15 +77,16 @@ minetest.register_node("random_buildings:bed_head", {
 
 
 -- the basic version of a bed - a sleeping mat
+-- to facilitate upgrade path straw mat -> sleeping mat -> bed, this uses a nodebox
 minetest.register_node("random_buildings:sleeping_mat", {
         description = "sleeping matg",
-        drawtype = 'signlike',
+        drawtype = 'nodebox',
         tiles = { 'sleepingmat.png' }, -- done by VanessaE
         wield_image = 'sleepingmat.png',
         inventory_image = 'sleepingmat.png',
         sunlight_propagates = true,
         paramtype = 'light',
-        paramtype2 = "wallmounted",
+        paramtype2 = "facedir",
         is_ground_content = true,
         walkable = false,
         groups = { snappy = 3 },
@@ -93,6 +94,18 @@ minetest.register_node("random_buildings:sleeping_mat", {
         selection_box = {
                         type = "wallmounted",
                         },
+        node_box = {
+                type = "fixed",
+                fixed = {
+                                        {-0.48, -0.5,-0.48,  0.48, -0.45, 0.48},
+                        }
+        },
+        selection_box = {
+                type = "fixed",
+                fixed = {
+                                        {-0.48, -0.5,-0.48,  0.48, -0.25, 0.48},
+                        }
+        }
 })
 
 

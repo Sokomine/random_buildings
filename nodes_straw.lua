@@ -6,22 +6,32 @@
 
 
 -- an even simpler from of bed - usually for animals 
+-- it is a nodebox and not wallmounted because that makes it easier to replace beds with straw mats
 minetest.register_node("random_buildings:straw_mat", {
         description = "layer of straw",
-        drawtype = 'signlike',
+        drawtype = 'nodebox',
         tiles = { 'darkage_straw.png' }, -- done by VanessaE
         wield_image = 'darkage_straw.png',
         inventory_image = 'darkage_straw.png',
         sunlight_propagates = true,
         paramtype = 'light',
-        paramtype2 = "wallmounted",
+        paramtype2 = "facedir",
         is_ground_content = true,
         walkable = false,
         groups = { snappy = 3 },
         sounds = default.node_sound_leaves_defaults(),
-        selection_box = {
-                        type = "wallmounted",
-                        },
+	node_box = {
+		type = "fixed",
+		fixed = {
+					{-0.48, -0.5,-0.48,  0.48, -0.45, 0.48},
+			}
+	},
+	selection_box = {
+		type = "fixed",
+		fixed = {
+					{-0.48, -0.5,-0.48,  0.48, -0.25, 0.48},
+			}
+	}
 })
 
 -- straw bales are a must for farming environments; if you for some reason do not have the darkage mod installed, this here gets you a straw bale

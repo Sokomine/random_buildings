@@ -91,9 +91,9 @@ random_buildings.register_roof = function( name, tiles, basic_material )
    minetest.register_craft({
 	output = "random_buildings:roof_"..name.." 6",
 	recipe = {
-		{'', '', material },
-		{'', material, '' },
-		{material, '', '' }
+		{'', '', basic_material },
+		{'', basic_material, '' },
+		{basic_material, '', '' }
 	}
    })
 
