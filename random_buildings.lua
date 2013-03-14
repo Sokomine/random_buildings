@@ -160,7 +160,7 @@ end
 -- action == 1: delete blocks
 random_buildings.build_building = function( start_pos, building_name, rotate, mirror, platform_materials, replace_material, only_do_these_materials, action )
  
-   --print( 'start_pos: '..minetest.serialize( start_pos )..' building_name: '..tostring( building_name )..' rotate: '..tostring( rotate ));
+print( 'start_pos: '..minetest.serialize( start_pos )..' building_name: '..tostring( building_name )..' rotate: '..tostring( rotate ));
 
    local selected_building = random_buildings.building[ building_name ];
 
@@ -854,11 +854,11 @@ end
 -- convert worldedit-savefiles to internal format
 -----------------------------------------------------------------------------------------------------------------
 
-random_buildings.convert_to_table = function( value )
+random_buildings.convert_to_table = function( value, rotate )
 
    local building_data = { count = 0, max = {}, min = {}, nodes = {} };
 
-   local max = {x=0, y=0, z=0};
+   local max = {x=-9999, y=-9999, z=-9999};
 
    local min = {x=9999, y=9999, z=9999};
 
@@ -873,6 +873,24 @@ random_buildings.convert_to_table = function( value )
       pos.x = tonumber(x);
       pos.y = tonumber(y);
       pos.z = tonumber(z);
+
+      -- if rotation==0, nothing needs to be done
+      if(     rotate == 1 ) then -- 90 degree
+         pos.x = tonumber(z);
+         pos.z = 0 - tonumber(x);
+
+      elseif( rotate == 2 ) then -- 180 degree
+
+         pos.x = 0-tonumber(x);
+         pos.z = 0-tonumber(z);
+
+      elseif( rotate == 3 ) then -- 270 degree
+ 
+         pos.x = 0-tonumber(z);
+         pos.z = tonumber(x);
+ 
+      end
+
 
       -- find out the dimensions of this particular building
       if( pos.x > max.x ) then max.x = pos.x; end
@@ -906,18 +924,64 @@ random_buildings.convert_to_table = function( value )
 
    if( count > 0 ) then
 
+print( 'rotation: '..tostring( rotate )..' old min: '..minetest.serialize( min )..' old max: '..minetest.serialize( max ));
+      min.x = min.x - 1;
+--      min.z = min.z - 1;
       -- make sure there is at least one row free in front of the entrance
-     min.x = min.x - 1;
+--      if( rotate==0 or rotate==2) then
+--         min.x = min.x - 1;
+--      else
+--         min.z = min.z - 1;
+--      end
 
+print( 'rotation: '..tostring( rotate )..' tmp min: '..minetest.serialize( min )..' tmp max: '..minetest.serialize( max ));
       -- the maximum might be affected by the offset as well
       max          = { x=( tonumber(max.x) - tonumber( min.x)),
                        y=( tonumber(max.y) - tonumber( min.y)),
                        z=( tonumber(max.z) - tonumber( min.z)) };
 
+
+      -- make sure all buildings begin at 0,0,0
+      for k,v in pairs( building_data.nodes ) do
+         for i,p in ipairs( v.posx ) do
+            building_data.nodes[ k ].posx[ i ] = {x=(p.x-min.x), y=(p.y-min.y), z=(p.z-min.z) };
+         end
+         building_data.nodes[ k ].p2 = random_buildings.transform_param2( tonumber(v.p2), rotate, 0, v.node );  -- mirroring is not required here
+      end
+
+
+--[[
+ 
+      if( rotate ~= 0 ) then
+  
+--         if( rotate==1 or rotate==3 ) then
+--            max = { x=max.z, y=max.y, z=max.x};
+--         end
+
+
+         for k,v in pairs( building_data.nodes ) do
+            for i,p in ipairs( v.posx ) do
+               local npos = random_buildings.transform_pos( { x = p.x, y = p.y, z = p.z }, {x=0,y=0,z=0}, max, 0, rotate );
+               -- store the modified position
+               building_data.nodes[ k ].posx[ i ] = {x=(npos.x+1), y=npos.y, z=(npos.z+1) };
+
+            end
+            building_data.nodes[ k ].p2 = random_buildings.transform_param2( tonumber(v.p2), rotate, 0, v.node );  -- mirroring is not required here
+         end
+      end
+
+      if( rotate==1 or rotate==3 ) then
+         min = { x=min.z, y=min.y, z=min.x};
+         max = { x=max.z, y=max.y, z=max.x};
+      end
+--]]
       building_data.count  = count;
       building_data.max    = max;
-      building_data.min    = min;
+      building_data.min    = {x=0,y=0,z=0};
+
+
    end
+print( 'rotation: '..tostring( rotate )..' new min: '..minetest.serialize( min )..' new max: '..minetest.serialize( max ));
 
    return building_data;
 end
@@ -925,7 +989,7 @@ end
 
 
 
-random_buildings.import_building = function( filename, menu_path )
+random_buildings.import_building = function( filename, menu_path, rotate )
 
    if( not( random_buildings.building )) then
     
@@ -945,36 +1009,9 @@ random_buildings.import_building = function( filename, menu_path )
    local value = file:read("*a");
    file:close();
 
-   random_buildings.building[ filename ] = random_buildings.convert_to_table( value );
+   random_buildings.building[ filename ] = random_buildings.convert_to_table( value, rotate );
    random_buildings.building[ filename ].menu_path  = menu_path;
    --print("Converted: "..minetest.serialize( random_buildings.building[ filename ] ));
 end
 
-
-
-print( "[MOD random_buildings] Importing lumberjack houses...");
-for i=1,8 do
-  random_buildings.import_building( "haus"..tostring(i), {'trader', 'lumberjack', 'haus'..tostring(i)});
-end
-
-
-print( "[MOD random_buildings] Importing clay trader houses...");
-for i=1,5 do
-  random_buildings.import_building( "trader_clay_"..tostring(i), {'trader', 'clay', 'trader_clay_'..tostring(i)});
-end
-
-print( "[MOD random_buildings] Importing farm houses...");
-for i=1,7 do
-  random_buildings.import_building( "farm_tiny_"..tostring(i), {'medieval','small farm', 'farm_tiny_'..tostring(i)} );
-end
-for i=1,3 do
-  random_buildings.import_building( "new_farm_tiny_"..tostring(i), {'medieval','small farm', 'new_farm_tiny_'..tostring(i)} );
-end
-for i,v in ipairs( {'wood_ernhaus','ernhaus_long_roof','ernhaus_second_floor','small_three_stories','hakenhof','zweiseithof'} ) do
-  random_buildings.import_building( "farm_"..v, {'medieval','full farm', 'farm_'..v});
-end
-
--- TODO: more buildings needed
-print( "[MOD random_buildings] Importing infrastructure buildings for villages...");
-  random_buildings.import_building( "infrastructure_taverne_1", {'medieval','tavern', 'infrastructure_taverne_1'} );
 

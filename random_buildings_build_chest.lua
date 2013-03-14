@@ -38,21 +38,35 @@ random_buildings.update_needed_list = function( pos, step )
       -- the lower part of the door counts as one door
       elseif( v.node == 'doors:door_wood_b_1' 
            or v.node == 'doors:door_wood_b_2' ) then
+
          node_needed = 'doors:door_wood';
          needed_in_step = 3; -- after the basic frame has been built
+
       elseif( v.node == 'random_buildings:half_door' 
-           or v.node == 'random_buildings:half_door_inverted'
-           or v.node == 'random_buildings:gate_open'
-           or v.node == 'random_buildings:gate_closed'
-           or v.node == 'random_buildings:window_shutter_open'
-           or v.node == 'random_buildings:window_shutter_closed' ) then
+           or v.node == 'random_buildings:half_door_inverted' ) then
+
          needed_in_step = 3;
+         node_needed    = 'random_buildings:half_door';
+
+      elseif( v.node == 'random_buildings:gate_open'
+           or v.node == 'random_buildings:gate_closed' ) then
+
+         needed_in_step = 3;
+         node_needed    = 'random_buildings:gate_closed';
+
+      elseif( v.node == 'random_buildings:window_shutter_open'
+           or v.node == 'random_buildings:window_shutter_closed' ) then
+
+         needed_in_step = 3;
+         node_needed    = 'random_buildings:window_shutter_closed';
+
       -- for this we need a hoe
       elseif( v.node == 'farming:soil'
            or v.node == 'farming:soil_wet'
            or v.node == 'farming:cotton'
            or v.node == 'farming:cotton_1'
-           or v.node == 'farming:cotton_2' ) then
+           or v.node == 'farming:cotton_2'       
+           or v.node == 'farming:cotton_3' ) then
          anz = 1;
          node_needed = 'farming:hoe_steel';
          needed_in_step = 4; -- step4: hoe + water
@@ -500,6 +514,7 @@ random_buildings.on_receive_fields = function(pos, formname, fields, player)
 
       table.remove( current_path ); -- revert latest selection
       meta:set_string( 'current_path', minetest.serialize( current_path ));
+      meta:set_string( 'building_name', '');
       random_buildings.update_formspec( pos, 'main', player );
 
    -- menu entry selected
@@ -734,6 +749,26 @@ random_buildings.on_metadata_inventory_put = function( pos, listname, index, sta
       replacements[ 'farming:cotton'      ] = 'farming:'..typ..'_1'; -- seeds need to grow manually
       replacements[ 'farming:cotton_1'    ] = 'farming:'..typ..'_1';
       replacements[ 'farming:cotton_2'    ] = 'farming:'..typ..'_1';
+      replacements[ 'farming:cotton_3'    ] = 'farming:'..typ..'_1';
+
+   elseif( input == 'random_buildings:half_door' 
+        or input == 'random_buildings:half_door_inverted' ) then
+
+      replacements[ 'random_buildings:half_door_inverted'   ] = 'random_buildings:half_door_inverted';
+      replacements[ 'random_buildings:half_door'            ] = 'random_buildings:half_door';
+
+
+   elseif( input == 'random_buildings:gate_open'
+        or input == 'random_buildings:gate_closed' ) then
+
+      replacements[ 'random_buildings:gate_open'            ] = 'random_buildings:gate_open';
+      replacements[ 'random_buildings:gate_closed'          ] = 'random_buildings:gate_closed';
+
+   elseif( input == 'random_buildings:window_shutter_open'
+        or input == 'random_buildings:window_shutter_closed' ) then
+
+      replacements[ 'random_buildings:window_shutter_open'  ] = 'random_buildings:window_shutter_open';
+      replacements[ 'random_buildings:window_shutter_closed'] = 'random_buildings:window_shutter_closed';
 
    -- we got water!
    elseif( input == 'bucket:bucket_water' ) then

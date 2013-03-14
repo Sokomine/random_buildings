@@ -17,8 +17,9 @@ dofile(minetest.get_modpath("random_buildings").."/mobf_trader.lua");
 dofile(minetest.get_modpath("random_buildings").."/spawn_lumberjack_houses.lua");
 dofile(minetest.get_modpath("random_buildings").."/spawn_trader_clay_houses.lua");
 
+dofile(minetest.get_modpath("random_buildings").."/random_buildings_import_farms.lua");
 
---minetest.register_alias("random_buildings:roof",           "random_buildings:roof_straw");
---minetest.register_alias("random_buildings:roof_connector", "random_buildings:roof_connector_straw");
---minetest.register_alias("random_buildings:roof_flat",      "random_buildings:roof_flat_straw");
+minetest.register_alias("random_buildings:roof",           "random_buildings:roof_straw");
+minetest.register_alias("random_buildings:roof_connector", "random_buildings:roof_connector_straw");
+minetest.register_alias("random_buildings:roof_flat",      "random_buildings:roof_flat_straw");
 
