@@ -497,9 +497,10 @@ random_buildings.upgrade_building = function( pos, player, old_material, new_mat
   replacements[      old_material ] = new_material;  
   replacements_orig[ old_material ] = new_material;  
   meta:set_string( 'replacements', minetest.serialize( replacements_orig ));
-  random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements_orig, replacements, 0 );
+  random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements_orig, replacements, 0, minetest.serialize( pos ) );
   random_buildings.update_formspec( pos, 'finished', player );
 end
+
 
 
 -- TODO: check if it is the owner of the chest/village
@@ -528,6 +529,14 @@ random_buildings.on_receive_fields = function(pos, formname, fields, player)
    
    -- abort the building - remove scaffolding
    elseif( fields.abort ) then
+
+      local inv  = meta:get_inventory();
+
+      if( not( inv:is_empty('main' ))) then
+          minetest.chat_send_player( player:get_player_name(), 'Please remove the surplus materials first!' );
+          return;
+      end
+
       local start_pos     = minetest.deserialize( meta:get_string( 'start_pos' ));
       local building_name = meta:get_string( 'building_name');
       local rotate        = meta:get_int( 'rotate' );
@@ -535,10 +544,9 @@ random_buildings.on_receive_fields = function(pos, formname, fields, player)
       local platform_materials = {};
       local replacements = minetest.deserialize( meta:get_string( 'replacements' ));
       -- action ist hier remove
-      random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements, nil, 2 );
+      random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements, nil, 2, minetest.serialize( pos ) );
 
       -- reset the needed materials in the building chest
-      local inv  = meta:get_inventory();
       for i=1,inv:get_size("needed") do
          inv:set_stack("needed", i, nil)
       end
@@ -813,7 +821,7 @@ random_buildings.on_metadata_inventory_put = function( pos, listname, index, sta
       end
    end
    meta:set_string( 'replacements', minetest.serialize( replacements_orig ));
-   random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements_orig, replacements, 0 );
+   random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements_orig, replacements, 0, minetest.serialize( pos ) );
 end
 
 

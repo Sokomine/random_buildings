@@ -158,7 +158,7 @@ end
 -- action: 0: normal building
 -- action>0 : check if blocks are still there
 -- action == 1: delete blocks
-random_buildings.build_building = function( start_pos, building_name, rotate, mirror, platform_materials, replace_material, only_do_these_materials, action )
+random_buildings.build_building = function( start_pos, building_name, rotate, mirror, platform_materials, replace_material, only_do_these_materials, action, owner_info )
  
 print( 'start_pos: '..minetest.serialize( start_pos )..' building_name: '..tostring( building_name )..' rotate: '..tostring( rotate ));
 
@@ -272,6 +272,11 @@ print( 'start_pos: '..minetest.serialize( start_pos )..' building_name: '..tostr
          else
             --print("Would now place node "..tostring( nodename ).." at position "..minetest.serialize( pos )..".");
             minetest.env:add_node( pos, { type="node", name = nodename, param2 = param2});
+            -- save information so that this can be protected from griefing
+            if( owner_info ~= nil ) then
+               local meta = minetest.env:get_meta( pos );
+               meta:set_string( 'owner_info', owner_info ); --minetest.pos_to_string( pos ));
+            end
          end
       
          -- if it is a chest, fill it with some stuff
@@ -335,6 +340,7 @@ random_buildings.build_pillar = function( pos, material, material_top, max_heigh
             node_name = material_top;
          end
          if( material ~= "" and node_name ~= nil ) then
+            -- pillars can be changed by the player - they are not part of the protected building
             minetest.env:add_node( {x=pos.x,y=new_y,z=pos.z}, { type="node", name = node_name, param2 = 0});
          end
 
@@ -784,7 +790,13 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
    random_buildings.make_room( pos, max, chest_pos );
    
    -- actually build the building
-   if( not( random_buildings.build_building( pos, building_name, rotate, mirror, platform_materials, replacements, nil, 0 ))) then
+   local owner_info = '';
+   if( chest_pos ~= nil ) then
+      owner_info = minetest.serialize( chest_pos );
+   else
+      owner_info = nil;
+   end
+   if( not( random_buildings.build_building( pos, building_name, rotate, mirror, platform_materials, replacements, nil, 0, owner_info ))) then
       return { x=pos.x, y=pos.y, z=pos.z, status = "need_to_wait" };
    end
 

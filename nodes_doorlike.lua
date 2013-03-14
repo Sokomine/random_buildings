@@ -30,7 +30,7 @@ minetest.register_node("random_buildings:window_shutter_open", {
 		node_box = {
 			type = "fixed",
 			fixed = {
-				{-0.45, -0.5,  0.4, -0.9, 0.5,  0.5},
+				{-0.90, -0.5,  0.4, -0.45, 0.5,  0.5},
 				{ 0.45, -0.5,  0.4,  0.9, 0.5,  0.5},
 			},
 		},
@@ -58,8 +58,8 @@ minetest.register_node("random_buildings:window_shutter_closed", {
 		node_box = {
 			type = "fixed",
 			fixed = {
-				{-0.5, -0.5,  0.4, -0.05, 0.5,  0.5},
-				{ 0.5, -0.5,  0.4,  0.05, 0.5,  0.5},
+				{-0.5,  -0.5,  0.4, -0.05, 0.5,  0.5},
+				{ 0.05, -0.5,  0.4,  0.5,  0.5,  0.5},
 			},
 		},
 		selection_box = {
@@ -151,7 +151,7 @@ minetest.register_node("random_buildings:half_door", {
 
 
 minetest.register_node("random_buildings:half_door_inverted", {
-		description = "half door",
+		description = "half door inverted",
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"default_wood.png"},
