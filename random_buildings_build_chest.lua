@@ -236,7 +236,6 @@ minetest.build_scaffolding = function( pos, player, building_name )
    local max    = { x = selected_building.max.x, y = selected_building.max.y, z = selected_building.max.z };
 --   local min    = { x = selected_building.min.x, y = selected_building.min.y, z = selected_building.min.z };
 
--- TODO: the rotation may not fit; the buildings may have been rotated when they where saved...
    -- make sure the building always extends forward and to the right of the player
    local rotate = 0;
    if(     node.param2 == 0 ) then rotate = 3;  if( mirror==1 ) then start_pos.x = start_pos.x - max.x + max.z; end -- z gets larger
@@ -739,7 +738,6 @@ random_buildings.on_metadata_inventory_put = function( pos, listname, index, sta
 
       meta:set_string( 'farm_typ', typ );
 
-      -- TODO: doesn't work that way - manual spawned houses have diffrent rotation....
       local selected_building = random_buildings.building[ building_name ];
       local max = {};
       if( rotate == 0 or rotate == 2 ) then 
@@ -850,19 +848,14 @@ minetest.register_node("random_buildings:build", {
         -- taken from towntest 
         allow_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
                 if from_list=="needed" or to_list=="needed" then return 0 end
-                if from_list=="builder" or to_list=="builder" then return 0 end -- TODO: just for testing!
---                if from_list=="lumberjack" or to_list=="lumberjack" then return 0 end
                 return count
         end,
         allow_metadata_inventory_put = function(pos, listname, index, stack, player)
                 if listname=="needed" then return 0 end
-                if listname=="builder" then return 0 end
---                if listname=="lumberjack" then return 0 end
                 return stack:get_count()
         end,
         allow_metadata_inventory_take = function(pos, listname, index, stack, player)
                 if listname=="needed" then return 0 end
-                if listname=="builder" then return 0 end
 --                if listname=="lumberjack" then return 0 end
                 return stack:get_count()
         end,
