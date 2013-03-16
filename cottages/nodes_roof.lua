@@ -124,7 +124,7 @@ cottages.register_roof( 'straw',
 		{"cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png"},
 		'cottages:straw_mat' );
 cottages.register_roof( 'wood',
-		{"default_tree.png","default_wood.png","default_wood.png","default_wood.png","default_tree.png","default_tree.png"},
+		{"default_tree.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","default_tree.png"},
 		'default:wood');
 cottages.register_roof( 'black',
 		{"cottages_homedecor_shingles_asphalt.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","cottages_homedecor_shingles_asphalt.png"},

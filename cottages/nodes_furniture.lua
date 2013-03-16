@@ -81,8 +81,8 @@ minetest.register_node("cottages:bed_head", {
 minetest.register_node("cottages:sleeping_mat", {
         description = "sleeping matg",
         drawtype = 'nodebox',
-        tiles = { 'sleepingmat.png' }, -- done by VanessaE
-        wield_image = 'sleepingmat.png',
+        tiles = { 'cottages_sleepingmat.png' }, -- done by VanessaE
+        wield_image = 'cottages_sleepingmat.png',
         inventory_image = 'cottages_sleepingmat.png',
         sunlight_propagates = true,
         paramtype = 'light',
