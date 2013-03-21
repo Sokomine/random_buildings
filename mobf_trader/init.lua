@@ -79,6 +79,14 @@ mobf_trader.npc_trader_prototype = {
 				stand = {
 					start_frame = 0,
 					end_frame   = 79,
+--   0- 79 standing
+--  79-149 sitting
+-- 149-169 sitting -> lying down
+-- 167-167 lying down
+-- 168-187 walking
+-- 187-197 (or more): digging animation
+-- 197-217 walking and digging
+-- 217-237 very fast digging
 					},
 			},
                 -- what the default trader offers
@@ -171,7 +179,14 @@ minetest.register_chatcommand("trader", {
                    minetest.chat_send_player(name, "Please supply the type of trader! Supported: "..minetest.serialize( mobf_trader.npc_trader_list ) );
                    return;
                 end
-                if( not( mobf_trader.npc_trader_list[ param ] )) then
+                
+                local found = false;
+                for i,v in ipairs( mobf_trader.npc_trader_list ) do
+                   if( v == param ) then
+                      found = true;
+                   end
+                end
+                if( not( found )) then
                    minetest.chat_send_player(name, "A trader of type \""..tostring( param ).."\" does not exist. Supported: "..minetest.serialize( mobf_trader.npc_trader_list ) );
                    return;
                 end
