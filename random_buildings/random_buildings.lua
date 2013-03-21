@@ -755,6 +755,9 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
       if( target_height < (pos.y-19)) then
          target_height = pos.y - 19;
       end 
+      if( target_height < 3 ) then
+         target_height = 3;
+      end
       print( " Trying position "..minetest.serialize( pos ).." height: "..tostring( height-20 ).." new height: "..tostring( (pos.y+(height-19))));
       print( " Actual target position: "..minetest.serialize( target_height ));
 
@@ -776,6 +779,9 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
    if( not( chest_pos )) then
       -- move upwards a bit to avoid having to replace too many nodes
       pos.y = pos.y + move_up_info.add_height;
+      if( pos.y < 3 ) then
+         pos.y = 3;
+      end
    else
       pos.y = pos.y + 1;
    end
@@ -803,6 +809,9 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
 
    if( inhabitant ~=  nil and inhabitant ~= "" ) then
       random_buildings.spawn_trader_at_building( pos, max, inhabitant );
+      print( 'Spawning INHABITANT '..tostring( inhabitant )..' at/around '..minetest.serialize( pos ));
+   else
+      print( 'Spawning NO INHABITANT at/around '..minetest.serialize( pos ));
    end
 
    return { x=pos.x, y=pos.y, z=pos.z, status = "ok" };
@@ -812,13 +821,15 @@ end
 random_buildings.spawn_trader_at_building = function( pos, max, inhabitant  )
 
    -- in order to spawn traders, the mod mobf_trader is required (that's what that mod is for)
-   if( minetest.get_modpath("mobf_trader") ~= nil ) then
+   if( minetest.get_modpath("mobf_trader") == nil ) then
+      --print('mobf_trader: aborting because mod not found');
       return false;
    end
 
    local tpos = {x=pos.x, y=(pos.y+1), z=pos.z};
    -- put the trader inside
    if( inhabitant ==  nil or  inhabitant == "" ) then
+print('mobf_trader: aborting because no inhabitant');
       return false;
    end
 
@@ -861,7 +872,7 @@ random_buildings.spawn_trader_at_building = function( pos, max, inhabitant  )
       tpos.y = tpos.y + 1;
    end
    print( "Location for trader: "..minetest.serialize( tpos ));
-   return mobf_trader_spawn_trader( tpos, inhabitant );
+   return mobf_trader.spawn_trader( tpos, inhabitant );
 end
 
 

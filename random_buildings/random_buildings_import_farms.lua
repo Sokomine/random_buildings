@@ -29,6 +29,9 @@ end
 -- TODO: more buildings needed
 print( "[MOD random_buildings] Importing infrastructure buildings for villages...");
   random_buildings.import_building( "infrastructure_taverne_1", {'medieval','tavern', 'infrastructure_taverne_1'}, 3 );
+  random_buildings.import_building( "taverne_small_2", {'medieval','tavern', 'taverne_small_2'}, 3 );
+  random_buildings.import_building( "taverne_small_3", {'medieval','tavern', 'taverne_small_3'}, 3 );
+  random_buildings.import_building( "taverne_small_4", {'medieval','tavern', 'taverne_small_4'}, 3 );
 
   random_buildings.import_building( "hut_1", {'medieval','small huts', 'hut_1'}, 'hut_1', 0 );
 

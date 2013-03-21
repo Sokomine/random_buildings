@@ -135,12 +135,15 @@ random_buildings.update_needed_list = function( pos, step )
            or v.node == 'cottages:table'
            or v.node == 'cottages:shelf'
            or v.node == 'cottages:washing' 
-           or v.node == 'cottages:wagon_wheel'
-           or v.node == 'cottages:barrel'
+           or v.node == 'cottages:wagon_wheel' 
+           or v.node == 'cottages:tub' ) then
+         needed_in_step = 6;
+
+      elseif( v.node == 'cottages:barrel'
            or v.node == 'cottages:barrel_open'
            or v.node == 'cottages:barrel_lying'
-           or v.node == 'cottages:barrel_lying_open'
-           or v.node == 'cottages:tub' ) then
+           or v.node == 'cottages:barrel_lying_open' ) then
+         node_needed = 'cottages:barrel';
          needed_in_step = 6;
 
       -- at first, a simple straw mat is enough for the NPC to sleep on - and that can be created from straw
@@ -796,6 +799,13 @@ random_buildings.on_metadata_inventory_put = function( pos, listname, index, sta
 
       replacements[ 'default:water_source' ] = 'default:water_source';
       replacements[ 'farming:soil' ]         = 'farming:soil_wet'; -- so that the protection can work
+
+   elseif( input == 'cottages:barrel' ) then
+
+      replacements[ 'cottages:barrel'            ] = 'cottages:barrel';
+      replacements[ 'cottages:barrel_open'       ] = 'cottages:barrel_open';
+      replacements[ 'cottages:barrel_lying'      ] = 'cottages:barrel_lying';
+      replacements[ 'cottages:barrel_lying_open' ] = 'cottages:barrel_lying_open';
 
    -- lets hope the house is ready for the lava...
    elseif( input == 'bucket:bucket_lava' ) then
