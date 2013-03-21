@@ -305,7 +305,7 @@ minetest.register_craft({
 	output = "cottages:half_door 2",
 	recipe = {
 		{"", "default:wood", "" },
-		{"", "door:door_wood", "" },
+		{"", "doors:door_wood", "" },
 	}
 })
 
