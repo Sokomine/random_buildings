@@ -90,6 +90,12 @@ random_buildings.update_needed_list = function( pos, step )
          if( node_needed_list[ node_needed ] and node_needed_list[ node_needed ] > 0 ) then
             anz = 0;
          end
+
+      -- those nodes can not be placed
+      elseif( v.node == 'default:water_flowing'
+           or v.node == 'default:lava_flowing' ) then
+         anz = 0;
+
       -- in the farm_tiny_?.we buildings, sandstone is used for the floor, and clay for the lower walls
       elseif( v.node == 'default:sandstone' 
            or v.node == 'default:clay'
@@ -182,7 +188,8 @@ random_buildings.update_needed_list = function( pos, step )
 
       -- wooden slabs and stairs are crafted automaticly
       elseif( v.node == 'stairs:slab_wood' 
-           or v.node == 'stairs:stair_wood' ) then
+           or v.node == 'stairs:stair_wood' 
+           or v.node ==  'stairs:slab_woodupside_down' ) then
         
          anz = math.ceil( anz/2 ); -- stairs are thus minimally cheaper
          node_needed = 'default:wood';
@@ -190,7 +197,8 @@ random_buildings.update_needed_list = function( pos, step )
 
       -- same with cobble: cobble slabs and stairs are crafted automaticly
       elseif( v.node == 'stairs:slab_cobble' 
-           or v.node == 'stairs:stair_cobble' ) then
+           or v.node == 'stairs:stair_cobble' 
+           or v.node == 'stairs:slab_cobbleupside_down' ) then
         
          anz = math.ceil( anz/2 ); -- stairs are thus minimally cheaper
          node_needed = 'default:cobble';
@@ -202,7 +210,6 @@ random_buildings.update_needed_list = function( pos, step )
       end
       -- TODO: replace default:tree and default:wood with the local wood the village is specialized on?
       -- TODO: combine bed_foot and bed_head into one to save space?
-      -- TODO: what if there is no material for one step?
 
       -- list the items as needed in the suitable fields
       if( anz > 0 and needed_in_step == step) then
@@ -224,6 +231,12 @@ random_buildings.update_needed_list = function( pos, step )
    end
 
    meta:set_int( 'building_stage', step );
+
+   -- if in this step nothing is needed, move to the next step
+   if( inv:is_empty( 'needed') and step < 6 and (#node_needed_list==0)) then
+      return random_buildings.update_needed_list( pos, step+1 );
+   end
+
    return replacements;
 end
 
@@ -726,6 +739,7 @@ random_buildings.on_metadata_inventory_put = function( pos, listname, index, sta
       replacements[ 'default:wood'                ] = 'default:wood';
       replacements[ 'stairs:slab_wood'            ] = 'stairs:slab_wood';
       replacements[ 'stairs:stair_wood'           ] = 'stairs:stair_wood';
+      replacements[ 'stairs:slab_woodupside_down' ] = 'stairs:slab_woodupside_down';
 
    -- same applies to cobble - no need to create seperate slabs
    elseif( input == 'default:cobble' ) then
@@ -733,6 +747,7 @@ random_buildings.on_metadata_inventory_put = function( pos, listname, index, sta
       replacements[ 'default:cobble'              ] = 'default:cobble';
       replacements[ 'stairs:slab_cobble'          ] = 'stairs:slab_cobble';
       replacements[ 'stairs:stair_cobble'         ] = 'stairs:stair_cobble';
+      replacements[ 'stairs:slab_cobbleupside_down' ] = 'stairs:slab_cobbleupside_down';
 
    -- the first windows are built using fences
    elseif( input == 'default:fence_wood' ) then
