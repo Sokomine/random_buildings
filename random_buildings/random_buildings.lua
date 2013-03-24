@@ -883,6 +883,31 @@ end
 -- convert worldedit-savefiles to internal format
 -----------------------------------------------------------------------------------------------------------------
 
+-- vorldedit has changed the format in which it stores its data
+random_buildings.worldedit_deserialize = function( value )
+
+   local result = {};
+
+   if( value:find("([+-]?%d+)%s+([+-]?%d+)%s+([+-]?%d+)") and not( value:find("%{"))) then
+
+      for x, y, z, name, param1, param2 in value:gmatch("([+-]?%d+)%s+([+-]?%d+)%s+([+-]?%d+)%s+([^%s]+)%s+(%d+)%s+(%d+)[^\r\n]*[\r\n]*") do
+         table.insert( result, {x=x,y=y,z=z,name=name,param1=param1,param2=param2});
+      end
+
+   elseif( value:find("%{") ) then
+     
+      -- this format contains metadata as well - but we have no usage for that
+      for i,v in ipairs( minetest.deserialize( value )) do 
+         table.insert( result, {x=v.x,y=v.y,z=v.z,name=v.name,param1=v.param1,param2=v.param2});
+      end
+          
+   else
+      print( "[Mod random_buildings] Error: Unknown safefile format.");
+   end
+   return result;
+end
+
+
 random_buildings.convert_to_table = function( value, rotate )
 
    local building_data = { count = 0, max = {}, min = {}, nodes = {} };
@@ -897,7 +922,16 @@ random_buildings.convert_to_table = function( value, rotate )
 
    local count = 0;
 
-   for x, y, z, name, param1, param2 in value:gmatch("([+-]?%d+)%s+([+-]?%d+)%s+([+-]?%d+)%s+([^%s]+)%s+(%d+)%s+(%d+)[^\r\n]*[\r\n]*") do
+   local data = random_buildings.worldedit_deserialize( value );
+ 
+   --for x, y, z, name, param1, param2 in value:gmatch("([+-]?%d+)%s+([+-]?%d+)%s+([+-]?%d+)%s+([^%s]+)%s+(%d+)%s+(%d+)[^\r\n]*[\r\n]*") do
+   for i,v in ipairs( data ) do
+      x = v.x;
+      y = v.y;
+      z = v.z;
+      name = v.name;
+      param1 = v.param1;
+      param2 = v.param2;
 
       pos.x = tonumber(x);
       pos.y = tonumber(y);
