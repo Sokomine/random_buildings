@@ -38,3 +38,7 @@ print( "[MOD random_buildings] Importing infrastructure buildings for villages..
   random_buildings.import_building( "hut_1", {'medieval','small huts', 'hut_1'}, 'hut_1', 0 );
 
 
+for i=1,8 do
+  random_buildings.import_building( "well_"..tostring(i), {'medieval', 'well', 'well_'..tostring(i)}, 0);
+end
+
