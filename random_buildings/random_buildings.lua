@@ -221,7 +221,7 @@ print( 'start_pos: '..minetest.serialize( start_pos )..' building_name: '..tostr
       v = selected_building.nodes[ k ];
 
       nodename = v.node;
-      if( replace_material[ nodename ] ~= nil ) then
+      if( replace_material ~= nil and replace_material[ nodename ] ~= nil ) then
          nodename = replace_material[ nodename ];
       end
 
@@ -533,7 +533,7 @@ random_buildings.check_if_free = function( pos, max, chest_pos )
 
             if(       node      == nil
                    or node.name == "ignore" ) then
-               --print("in check_if_free");
+--print('WAIT: '..minetest.serialize( node )..' at '..minetest.pos_to_string( {x=x1, y=y1, z=z1} )..' in check_if_free');
                return { status = "need_to_wait", add_height = 0};
 
             elseif( node.name ~= "air" ) then
@@ -560,6 +560,13 @@ random_buildings.check_if_free = function( pos, max, chest_pos )
                      or node.name == 'default:tree'
                      or node.name == 'default:leaves'
                      or node.name == 'default:cactus' 
+
+                     or node.name == 'default:grass_1'
+                     or node.name == 'default:grass_2'
+                     or node.name == 'default:grass_3'
+                     or node.name == 'default:grass_4'
+                     or node.name == 'default:grass_5'
+                     or node.name == 'default:dry_shrub'
                         -- flowers and the like - they can spawn again later if they want to
                      or (    minetest.registered_nodes[ node.name ] ~= nil
                          and minetest.registered_nodes[ node.name ].walkable == false 
@@ -572,19 +579,19 @@ random_buildings.check_if_free = function( pos, max, chest_pos )
                elseif( string.find( node.name, "moretrees:" )
                   and  string.find( node.name, "leaves" )) then
 
-                  print( "[Mod random_buildings] Found and ignoring leaves: "..(node.name or "?" ));
+--                  print( "[Mod random_buildings] Found and ignoring leaves: "..(node.name or "?" ));
 
                -- snow and ice do not hinder building a house
                elseif( string.find( node.name, "snow:" )) then
 
-                  print( "[Mod random_buildings] Found and ignoring snow: "..(node.name or "?" ));
+--                  print( "[Mod random_buildings] Found and ignoring snow: "..(node.name or "?" ));
 
                elseif( string.find( node.name, "shells:" )) then
 
-                  print( "[Mod random_buildings] Found and ignoring shells: "..(node.name or "?" ));
+--                  print( "[Mod random_buildings] Found and ignoring shells: "..(node.name or "?" ));
 
                elseif( node.name == 'random_buildings:build' and chest_pos ~= nil and chest_pos.x == x1 and chest_pos.y == y1 and chest_pos.z==z1 ) then
-                  print( "[Mod random_buildings] Found and ignoring the building chest for this particular building.");
+--                  print( "[Mod random_buildings] Found and ignoring the building chest for this particular building.");
 
                -- unknown nodes - possibly placed by a player; in this case: abort the operation
                else
@@ -738,6 +745,7 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
       -- search for ground level at the given coordinates
       local height = random_buildings.build_pillar( {x=(pos.x), y=(pos.y+20), z=(pos.z)}, "", "", 40 );
       if( height == -1 ) then
+         --print('Building of pillar failed. Need to wait.');
          return { x=pos.x, y=pos.y, z=pos.z, status = "need_to_wait" };
       end
 
@@ -769,10 +777,12 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
    local move_up_info = random_buildings.check_if_free( pos, max, chest_pos );
    if(     move_up_info.status == "need_to_wait" ) then 
 
+      --print('check_if_free returned need_to_wait.');
       return { x=pos.x, y=pos.y, z=pos.z, status = "need_to_wait" };
 
    elseif( move_up_info.status == "aborted" ) then
 
+      --print('check_if_free returned aborted.');
       return { x=pos.x, y=pos.y, z=pos.z, status = "aborted", reason = move_up_info.reason };
    end 
 
@@ -789,6 +799,7 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
    -- find out if we need to cover the platform the building will end up on with sand, desert sand or dirt
    local platform_materials = random_buildings.get_platform_materials( pos, max );
    if( not( platform_materials )) then
+      --print('Did not find suitable platform materials.');
       return { x=pos.x, y=pos.y, z=pos.z, status = "need_to_wait" };
    end
      
@@ -804,6 +815,7 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
       owner_info = nil;
    end
    if( not( random_buildings.build_building( pos, building_name, rotate, mirror, platform_materials, replacements, nil, 0, owner_info ))) then
+      --print('Building of building - for some reason - failed.');
       return { x=pos.x, y=pos.y, z=pos.z, status = "need_to_wait" };
    end
 
