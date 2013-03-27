@@ -475,7 +475,7 @@ random_buildings.update_formspec = function( pos, page, player )
    -- TODO: when finished, let the NPC move into the building
    elseif( page == 'finished' ) then
       local building_name = meta:get_string( 'building_name' );
-                   formspec = "size[12,10]"..
+                   formspec = "size[12,11]"..
                             "label[1,1;Building finished successfully.]"..
 
                             "button[0.3,2;4,0.5;make_white;paint building white]"..
@@ -484,6 +484,9 @@ random_buildings.update_formspec = function( pos, page, player )
                             "button[0.3,5;4,0.5;make_cobble;upgrade to cobble]"..
                             "button[0.3,6;4,0.5;make_loam;downgrade to loam]"..
                             "button[0.3,7;4,0.5;make_wood;turn into wood]"..
+                            "button[0.3,8;4,0.5;make_junglewood;turn into dark junglewood]"..
+                            "button[0.3,9;4,0.5;white_and_jungle;bottom white, top junglewood]"..
+                            "button[0.3,10;4,0.5;white_and_loam;bottom white, top loam]"..
 
                             "button[4.3,2;4,0.5;roof_straw;turn roof into straw]"..
                             "button[4.3,3;4,0.5;roof_tree;turn roof into tree]"..
@@ -493,6 +496,13 @@ random_buildings.update_formspec = function( pos, page, player )
 
                             "button[4.3,7;4,0.5;make_glass;upgrade to glass panes]"..
                             "button[4.3,8;4,0.5;make_noglass;downgrade to simple windows]"..
+
+                            "button[8.3,2;4,0.5;cobble_cobble;turn cobble into cobble]"..
+                            "button[8.3,3;4,0.5;cobble_brick;turn cobble into stonebrick]"..
+                            "button[8.3,4;4,0.5;cobble_stone;turn cobble into stone]"..
+                            "button[8.3,5;4,0.5;wood_junglewood;turn wood into junglewood]"..
+
+                            "button[8.3,1;4,0.5;wood_wood;turn wood into wood]"..
 
                             "label[8.5,6.0;Object:]"    .."label[9.5,6.0;"..(building_name or '?').."]"..
                             "label[8.5,6.4;Owner:]"     .."label[9.5,6.4;"..(owner_name or "?").."]"..
@@ -644,6 +654,31 @@ random_buildings.on_receive_fields = function(pos, formname, fields, player)
    elseif( fields.make_noglass ) then
       random_buildings.upgrade_building( pos, player, 'cottages:glass_pane', 'default:fence_wood' );
 
+   elseif( fields.cobble_cobble ) then
+      random_buildings.upgrade_building( pos, player, 'default:cobble',                'default:cobble' );
+      random_buildings.upgrade_building( pos, player, 'stairs:slab_cobble',            'stairs:slab_cobble' );
+
+   elseif( fields.cobble_brick ) then
+      random_buildings.upgrade_building( pos, player, 'default:cobble',                'default:stonebrick' );
+      random_buildings.upgrade_building( pos, player, 'stairs:slab_cobble',            'stairs:slab_stonebrick' );
+
+   elseif( fields.cobble_stone ) then
+      random_buildings.upgrade_building( pos, player, 'default:cobble',                'default:stone' );
+      random_buildings.upgrade_building( pos, player, 'stairs:slab_cobble',            'stairs:slab_stone' );
+
+   elseif( fields.wood_junglewood ) then
+      random_buildings.upgrade_building( pos, player, 'default:wood',                  'default:junglewood' );
+
+   elseif( fields.wood_wood ) then
+      random_buildings.upgrade_building( pos, player, 'default:wood',                  'default:wood' );
+
+   elseif( fields.white_and_jungle ) then
+      random_buildings.upgrade_building( pos, player, 'cottages:clay',                 'cottages:clay' );
+      random_buildings.upgrade_building( pos, player, 'cottages:loam',                 'default:junglewood' );
+
+   elseif( fields.white_and_loam ) then
+      random_buildings.upgrade_building( pos, player, 'cottages:clay',                 'cottages:clay' );
+      random_buildings.upgrade_building( pos, player, 'cottages:loam',                 'cottages:loam' );
    end
 
 end
