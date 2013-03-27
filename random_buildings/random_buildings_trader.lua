@@ -1,25 +1,8 @@
--- add command so that a trader can be spawned
-minetest.register_chatcommand("thaus", {
-        params = "",
-        description = "Spawns a random building.",
-        privs = {},
-        func = function(name, param)
 
-                local player = minetest.env:get_player_by_name(name);
-                local pos    = player:getpos();
-
-                minetest.chat_send_player(name, "Searching for a position to place a house.");
-
---                local possible_types = {'birch','spruce','jungletree','fir','beech','apple_tree','oak','sequoia','palm','pine', 'willow','rubber_tree'};
---                local typ = possible_types[ math.random( 1, #possible_types )];
-
---                random_buildings.build_next_to_tree( {x=pos.x, y=pos.y, z=pos.z, typ = "moretrees:"..typ.."_trunk", name = name } );
-                random_buildings.build_trader_clay(  {x=pos.x, y=pos.y, z=pos.z } );
-             end
-});
-
-
-
+-- this function does:
+-- * selects a random rotation and mirror value
+-- * search for a suitable free building position somewhere around the desired location
+-- * waits and tries again if the building could not be placed due to area not loaded yet
 
 random_buildings.build_trader_house = function( pos )
 
@@ -41,6 +24,7 @@ random_buildings.build_trader_house = function( pos )
    local found = false;
 
 
+print('build_trader_house: '..tostring( building_name ));
    -- try up to 3 times
    if( pos.last_status == nil ) then
 
