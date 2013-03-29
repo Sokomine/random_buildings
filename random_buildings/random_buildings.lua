@@ -158,7 +158,7 @@ end
 -- action: 0: normal building
 -- action>0 : check if blocks are still there
 -- action == 1: delete blocks
-random_buildings.build_building = function( start_pos, building_name, rotate, mirror, platform_materials, replace_material, only_do_these_materials, action, owner_info )
+random_buildings.build_building = function( start_pos, building_name, rotate, mirror, platform_materials, replace_material, only_do_these_materials, action, chest_pos )
  
 print( 'start_pos: '..minetest.serialize( start_pos )..' building_name: '..tostring( building_name )..' rotate: '..tostring( rotate ));
 
@@ -172,6 +172,12 @@ print( 'start_pos: '..minetest.serialize( start_pos )..' building_name: '..tostr
    local param2;
    local pos = {x=0,y=0,z=0};
    local i, j, k, orig_pos;
+
+   -- store who owns the building
+   local owner_info = nil;
+   if( chest_pos ~= nil ) then
+      owner_info = minetest.serialize( chest_pos );
+   end
 
 
    local build_immediate = {};
@@ -272,11 +278,17 @@ print( 'start_pos: '..minetest.serialize( start_pos )..' building_name: '..tostr
          -- normal operation: place the node
          else
             --print("Would now place node "..tostring( nodename ).." at position "..minetest.serialize( pos )..".");
-            minetest.env:add_node( pos, { type="node", name = nodename, param2 = param2});
             -- save information so that this can be protected from griefing
             if( owner_info ~= nil ) then
-               local meta = minetest.env:get_meta( pos );
-               meta:set_string( 'owner_info', owner_info ); --minetest.pos_to_string( pos ));
+
+               if( pos.x~=chest_pos.x or pos.y~=chest_pos.y or pos.z~=chest_pos.z ) then
+                  minetest.env:add_node( pos, { type="node", name = nodename, param2 = param2});
+
+                  local meta = minetest.env:get_meta( pos );
+                  meta:set_string( 'owner_info', owner_info ); --minetest.pos_to_string( pos ));
+               end
+            else
+               minetest.env:add_node( pos, { type="node", name = nodename, param2 = param2});
             end
          end
       
@@ -808,13 +820,7 @@ random_buildings.spawn_building = function( pos, building_name, rotate, mirror, 
    random_buildings.make_room( pos, max, chest_pos );
    
    -- actually build the building
-   local owner_info = '';
-   if( chest_pos ~= nil ) then
-      owner_info = minetest.serialize( chest_pos );
-   else
-      owner_info = nil;
-   end
-   if( not( random_buildings.build_building( pos, building_name, rotate, mirror, platform_materials, replacements, nil, 0, owner_info ))) then
+   if( not( random_buildings.build_building( pos, building_name, rotate, mirror, platform_materials, replacements, nil, 0, chest_pos ))) then
       --print('Building of building - for some reason - failed.');
       return { x=pos.x, y=pos.y, z=pos.z, status = "need_to_wait" };
    end

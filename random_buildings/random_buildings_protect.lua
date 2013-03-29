@@ -44,12 +44,14 @@ random_buildings.is_protected = function( pos, node, digger, data )
    -- the information about the owner is stored in the building chest - and there is no guarantee that that area is loaded
    local chest_pos = minetest.deserialize( owner_info );
 
-   local chest_node = minetest.env:get_node( chest_pos );
+   if( chest_pos ) then
+      chest_node = minetest.env:get_node( chest_pos );
+   end
 
    if( chest_node == nil or chest_node.name == 'ignore' ) then
 
       minetest.chat_send_player(digger:get_player_name(), 'This building is owned by someone. '..
-                 'Please wait a moment and dig this node again to find out by whom it is owned.');
+                 'Please wait a moment and dig this node again to find out by whom it is owned.'); --..minetest.serialize( owner_info )..' node: '..minetest.serialize( chest_pos ));
       return 1; -- this is protected - even though we don't know yet by whom
    end
 

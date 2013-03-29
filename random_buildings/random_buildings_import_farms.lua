@@ -50,4 +50,4 @@ for i,v in ipairs( {'post_mill'} ) do
 end
 
 
-  random_buildings.import_building( "church_1", {'medieval', 'infrastructure', 'church', 'church_1'}, 0);
+  random_buildings.import_building( "church_1", {'medieval', 'infrastructure', 'church', 'church_1'}, 1);

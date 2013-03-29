@@ -271,6 +271,14 @@ minetest.build_scaffolding = function( pos, player, building_name )
    elseif( node.param2 == 3 ) then rotate = 2;  start_pos.x = start_pos.x - max.x; -- x gets smaller 
    end
       
+
+   -- the chest becomes part of the building
+   if(     node.param2 == 0 ) then start_pos.z = start_pos.z - 1;
+   elseif( node.param2 == 1 ) then start_pos.x = start_pos.x - 1;
+   elseif( node.param2 == 2 ) then start_pos.z = start_pos.z + 1;
+   elseif( node.param2 == 3 ) then start_pos.x = start_pos.x + 1;
+   end
+
  minetest.chat_send_player( name, "Facedir: "..minetest.serialize( node.param2 ).." rotate: "..tostring( rotate ).." mirror: "..tostring( mirror));
 
    local replacements = random_buildings.update_needed_list( pos, 0 ); -- request the material for the very first building step
@@ -537,7 +545,7 @@ random_buildings.upgrade_building = function( pos, player, old_material, new_mat
   replacements[      old_material ] = new_material;  
   replacements_orig[ old_material ] = new_material;  
   meta:set_string( 'replacements', minetest.serialize( replacements_orig ));
-  random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements_orig, replacements, 0, minetest.serialize( pos ) );
+  random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements_orig, replacements, 0, pos );
   random_buildings.update_formspec( pos, 'finished', player );
 end
 
@@ -584,7 +592,7 @@ random_buildings.on_receive_fields = function(pos, formname, fields, player)
       local platform_materials = {};
       local replacements = minetest.deserialize( meta:get_string( 'replacements' ));
       -- action is remove in this case
-      random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements, nil, 2, minetest.serialize( pos ) );
+      random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements, nil, 2, pos );
 
       -- reset the needed materials in the building chest
       for i=1,inv:get_size("needed") do
@@ -895,7 +903,7 @@ random_buildings.on_metadata_inventory_put = function( pos, listname, index, sta
       end
    end
    meta:set_string( 'replacements', minetest.serialize( replacements_orig ));
-   random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements_orig, replacements, 0, minetest.serialize( pos ) );
+   random_buildings.build_building( start_pos, building_name, rotate, mirror, platform_materials, replacements_orig, replacements, 0, pos );
 end
 
 
@@ -903,6 +911,15 @@ minetest.register_node("random_buildings:build", {
 	description = "Building-Spawner",
 	tiles = {"default_chest_side.png", "default_chest_top.png", "default_chest_side.png",
 		"default_chest_side.png", "default_chest_side.png", "default_chest_front.png"},
+--        drawtype = 'signlike',
+--        paramtype = "light",
+--        paramtype2 = "wallmounted",
+--        sunlight_propagates = true,
+--        walkable = false,
+--        selection_box = {
+--                type = "wallmounted",
+--        },
+
 	paramtype2 = "facedir",
 	groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 	legacy_facedir_simple = true,
