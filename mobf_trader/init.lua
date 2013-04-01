@@ -6,6 +6,11 @@
 --
 --
 -------------------------------------------------------------------------------
+-- * recognizes bences, chairs, armchairs and toilets as things to sit on (from cottages, 3dforniture and homedecor)
+-- * acceptable beds come from cottages, papyrus_bed and beds
+
+
+
 minetest.log("action","MOD: mobf_trader mod loading ...")
 
 local version = "0.0.2"
@@ -18,6 +23,200 @@ local modpath = minetest.get_modpath("mobf_trader");
 mobf_trader = {}
 
 mobf_trader.npc_trader_list = {}
+
+
+
+
+-- TODO: don't talk that much with singleplayer
+
+
+mobf_trader.check_if_free = function( pos, entity )
+
+   local objects = minetest.env:get_objects_inside_radius( pos, 1 );
+
+   for k,v in pairs(objects) do
+
+      local other = v:get_luaentity( v );
+      -- dropped objects are not real obstacle; other mobs are in the way, but not mere items
+      if( other ~= nil and other.name ~= '__builtin:item' ) then
+         minetest.chat_send_player('singleplayer', 'Found for entity '..tostring( entity )..': '..tostring( v )..', which is '..tostring( other.name ));
+         return false; -- place already occupied
+      end
+   end
+   return true;
+end
+
+
+
+mobf_trader.allow_stand = function( entity, state )
+   
+   -- it happens quite often that no entity is given :-(
+   if( not( entity )) then
+      return true;
+   end
+
+   local pos   = entity.object:getpos();
+
+   local npc_name = entity.name..' '..tostring( entity )..': '; -- TODO: get the real name (which has to be stored somewhere first...)
+
+   -- check if the place where the npc wants to stand is free (very simple collusion detection)
+   if( not( mobf_trader.check_if_free( pos, entity ))) then
+      minetest.chat_send_player('singleplayer', npc_name..'Excuse me? Can you let me through, please?');
+      return false;
+   end
+   minetest.chat_send_player('singleplayer', npc_name..'Let\'s wait a bit for more intresting things to happen.');
+   return true;
+end
+
+
+
+mobf_trader.allow_sit = function( entity, state )
+   
+   -- it happens quite often that no entity is given :-(
+   if( not( entity )) then
+      return true;
+   end
+
+   local pos   = entity.object:getpos();
+   local t_pos = minetest.env:find_node_near( pos, 2, {'cottages:bench', '3dforniture:chair', '3dforniture:armchair', 'homedecor:chair', 'homedecor:armchair',
+                                                       '3dforniture:toilet', '3dforniture:toilet_open', 'homedecor:toilet', 'homedecor:toilet_open'});
+
+   local npc_name = entity.name..' '..tostring( entity )..': '; -- TODO: get the real name (which has to be stored somewhere first...)
+   if( not( t_pos )) then
+      minetest.chat_send_player('singleplayer', npc_name..'Sorry, I found no place to sit on.');
+      return false;
+   end
+
+   -- check if the place where the npc wants to sit is free
+   if( not( mobf_trader.check_if_free( t_pos, entity ))) then
+      minetest.chat_send_player('singleplayer', npc_name..'Sorry, I\'m looking for a free seat. This one seems occupied.');
+      return false;
+   end
+
+   -- find out how to rotate in order to be able to sit depending on rotation
+   local node = minetest.env:get_node( t_pos ); 
+
+   local yaw    = 0;
+   local param2 = node.param2;
+   if( param2==0 ) then
+      yaw = 180;
+   elseif( param2==1 ) then
+      yaw = 90;
+   elseif( param2==2 ) then
+      yaw = 0;
+   elseif( param2==3 ) then
+      yaw = 270;
+   end
+
+   -- this is perfect for armchairs
+   if(     node.name == '3dforniture:toilet_open' or node.name == 'homedecor:toilet_open' ) then 
+      minetest.chat_send_player('singleplayer', npc_name..'I am busy. Come back later!');
+
+   elseif( node.name == '3dforniture:toilet' or node.name == 'homedecor:toilet' ) then 
+      minetest.chat_send_player('singleplayer', npc_name..'Well, I suppose you can sit on a toilet if there\'s nothing else around...');
+
+   elseif( node.name == '3dforniture:armchair' or node.name == 'homedecor:armchair' ) then 
+      minetest.chat_send_player('singleplayer', npc_name..'I am now sitting and relaxing in a comftable armchair.');
+
+   -- on a chair, people usually sit around less orderly
+   elseif( node.name == '3dforniture:chair' or node.name == 'homedecor:chair' ) then
+      yaw = math.random( yaw-30, yaw+30 );
+      if( yaw < 0 ) then
+         yaw = 360 + yaw;
+      end
+      minetest.chat_send_player('singleplayer', npc_name..'I am now sitting on a chair and waiting.');
+
+   -- in order to sit properly on the bench, the NPC has to move a bit backwards; more rotation than on chair may occour
+   elseif( node.name == 'cottages:bench' ) then
+
+      -- adjust the position of the npc
+      if( param2== 0) then
+         t_pos.z = t_pos.z + 0.3; 
+      elseif( param2==1 ) then
+         t_pos.x = t_pos.x + 0.3; 
+      elseif( param2==2 ) then
+         t_pos.z = t_pos.z - 0.3; 
+      elseif( param2==3 ) then
+         t_pos.x = t_pos.x - 0.3; 
+      end
+
+      -- on a bench, sitting less ordered may be more common
+      yaw = math.random( yaw-60, yaw+60 );
+      if( yaw < 0 ) then
+         yaw = 360 + yaw;
+      end
+      minetest.chat_send_player('singleplayer', npc_name..'I am now sitting on a bench. Hope there\'ll be supper soon!');
+   else
+      minetest.chat_send_player('singleplayer', npc_name..'Help! I\'m sitting on an object I don\'t know!');
+   end
+
+   -- rotate the npc in the right direction
+   entity.object:setyaw( math.rad( yaw ));
+
+   -- move the entity on the furniture; the entity has already been rotated accordingly
+   entity.object:setpos( {x=t_pos.x, y=t_pos.y+1,z=t_pos.z} );
+
+   return true;
+end
+
+
+
+-- TODO: only sleep at night?
+mobf_trader.allow_sleep = function( entity, state )
+   
+   -- it happens quite often that no entity is given :-(
+   if( not( entity )) then
+      return true;
+   end
+
+   local pos   = entity.object:getpos();
+   local t_pos = minetest.env:find_node_near( pos, 2, {'cottages:bed_head', 'papyrus_bed:bed_top', 'beds:bed_top'});
+
+   local npc_name = entity.name..' '..tostring( entity )..': '; -- TODO: get the real name (which has to be stored somewhere first...)
+   if( not( t_pos )) then
+      minetest.chat_send_player('singleplayer', npc_name..'Sorry, I found no bed where I could sleep in. Hope I\'ll find one soon!');
+      return false;
+   end
+
+   -- check if the place where the npc wants to sleep is free
+   if( not( mobf_trader.check_if_free( t_pos, entity ))) then
+      minetest.chat_send_player('singleplayer', npc_name..'This bed seems to be occupied. I\'ll search for a free one.');
+      return false;
+   end
+
+   -- find out how to rotate in order to be able to sleep depending on rotation
+   local node = minetest.env:get_node( t_pos ); 
+
+   -- aim for the middle of the bed
+   local yaw    = 0;
+   local param2 = node.param2;
+   if( param2==0 ) then
+      yaw = 180;
+      t_pos.z = t_pos.z - 0.5; 
+   elseif( param2==1 ) then
+      yaw = 90;
+      t_pos.x = t_pos.x - 0.5; 
+   elseif( param2==2 ) then
+      yaw = 0;
+      t_pos.z = t_pos.z + 0.5; 
+   elseif( param2==3 ) then
+      yaw = 270;
+      t_pos.x = t_pos.x + 0.5; 
+   end
+
+   minetest.chat_send_player('singleplayer', npc_name..'Good night!');
+
+   -- rotate the npc in the right direction
+   entity.object:setyaw( math.rad( yaw ));
+
+   -- move the entity on the furniture; the entity has already been rotated accordingly
+   entity.object:setpos( {x=t_pos.x, y=t_pos.y+1.5,z=t_pos.z} );
+
+   return true;
+end
+
+
+
 
 mobf_trader.npc_trader_prototype = {
 		name="npc_trader",
@@ -45,7 +244,7 @@ mobf_trader.npc_trader_prototype = {
 		
 		spawning = {
 					rate=0,
-					density=750,
+					density=100, --750,
 					algorithm="building_spawner",
 					height=2
 					},
@@ -70,6 +269,61 @@ mobf_trader.npc_trader_prototype = {
 					visual_size= {x=1, y=1},
 					},
 				},
+
+                                {
+                                        name = "walk",
+                                        custom_preconhandler = nil,
+                                        movgen               = "jordan4ibanez_mov_gen", --"probab_mov_gen", -- TODO
+                                        typical_state_time   = 5,
+                                        chance               = 0.15,
+                                        animation            = "walk"
+                                },
+
+                                {
+                                        name = "stand",
+                                        custom_preconhandler = mobf_trader.allow_stand,
+                                        movgen               = "none",
+                                        typical_state_time   = 5,
+                                        chance               = 0.25,
+                                        animation            = "stand"
+                                },
+
+                                {
+                                        name = "sit",
+                                        custom_preconhandler = mobf_trader.allow_sit,
+                                        movgen               = "none",
+                                        typical_state_time   = 15,
+                                        chance               = 0.25,
+                                        animation            = "sit"
+                                },
+
+                                {
+                                        name = "sleep",
+                                        custom_preconhandler = mobf_trader.allow_sleep,
+                                        movgen               = "none",
+                                        typical_state_time   = 15,
+                                        chance               = 0.25,
+                                        animation            = "sleep",
+                                },
+
+                                {
+                                        name = "mine",
+                                        custom_preconhandler = nil,
+                                        movgen               = "none",
+                                        typical_state_time   = 5,
+                                        chance               = 0.05,
+                                        animation            = "mine"
+                                },
+
+                                {
+                                        name = "walk_mine",
+                                        custom_preconhandler = nil,
+                                        movgen               = "probab_mov_gen", -- TODO
+                                        typical_state_time   = 5,
+                                        chance               = 0.05,
+                                        animation            = "walk_mine"
+                                },
+
 			},
 		animation = {
 				walk = {
@@ -79,6 +333,25 @@ mobf_trader.npc_trader_prototype = {
 				stand = {
 					start_frame = 0,
 					end_frame   = 79,
+					},
+				sit   = {
+					start_frame = 81,
+					end_frame   = 160,
+					},
+				sleep = {
+					start_frame = 162,
+					end_frame   = 166,
+					},
+				mine  = {
+					start_frame = 189,
+					end_frame   = 198,
+					},
+				walk_mine  = {
+					start_frame = 200,
+					end_frame   = 219,
+					},
+			},
+
 --   0- 79 standing
 --  79-149 sitting
 -- 149-169 sitting -> lying down
@@ -87,8 +360,6 @@ mobf_trader.npc_trader_prototype = {
 -- 187-197 (or more): digging animation
 -- 197-217 walking and digging
 -- 217-237 very fast digging
-					},
-			},
                 -- what the default trader offers
 		trader_inventory = {
 				goods = {},
