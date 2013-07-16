@@ -79,7 +79,7 @@ minetest.register_craft({
                 {'default:cobble','',''},
 		{"farming:wheat_harvested", "farming:wheat_harvested", "farming:wheat_harvested", },
 	},
-        replacements = {{ 'default:cobble', "farming:wheat_seed 3" }},  
+        replacements = {{ 'default:cobble', "farming:seed_wheat 3" }},  
 })
 
 minetest.register_craft({
