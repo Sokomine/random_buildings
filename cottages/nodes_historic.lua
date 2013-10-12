@@ -92,11 +92,11 @@ minetest.register_node("cottages:glass_pane", {
 -- crafting receipes
 ---------------------------------------------------------------------------------------
 minetest.register_craft({
-	output = "cottages:wagon_wheel",
+	output = "cottages:wagon_wheel 3",
 	recipe = {
-		{"",             "default:stick",       "" },
-		{"default:stick","default:steel_ingot", "default:stick" },
-		{"",             "default:stick",       "" }
+		{"default:iron_lump", "default:stick",       "default:iron_lump" },
+		{"default:stick",     "default:steel_ingot", "default:stick" },
+		{"default:iron_lump", "default:stick",       "default:iron_lump" }
 	}
 })
 
