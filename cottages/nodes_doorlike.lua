@@ -16,6 +16,32 @@
 -- small window shutters for single-node-windows; they open at day and close at night if the abm is working
 -----------------------------------------------------------------------------------------------------------
 
+-- propagate shutting/closing of window shutters to window shutters below/above this one
+cottages_window_sutter_operate = function( pos, old_node_state_name, new_node_state_name )
+   
+   local offsets   = {-1,1,-2,2,-3,3};
+   local stop_up   = 0;
+   local stop_down = 0;
+
+   for i,v in ipairs(offsets) do
+
+      local node = minetest.env:get_node_or_nil( {x=pos.x, y=(pos.y+v), z=pos.z } );
+      if( node and node.name and node.name==old_node_state_name 
+        and ( (v > 0 and stop_up   == 0 ) 
+           or (v < 0 and stop_down == 0 ))) then
+
+         minetest.env:add_node({x=pos.x, y=(pos.y+v), z=pos.z }, {name = new_node_state_name, param2 = node.param2})
+
+      -- found a diffrent node - no need to search further up
+      elseif( v > 0 and stop_up   == 0 ) then
+         stop_up   = 1; 
+
+      elseif( v < 0 and stop_down == 0 ) then
+         stop_down = 1; 
+      end
+   end
+end
+
 -- window shutters - they cover half a node to each side
 minetest.register_node("cottages:window_shutter_open", {
 		description = "opened window shutters",
@@ -43,6 +69,7 @@ minetest.register_node("cottages:window_shutter_open", {
 		drop = "cottages:window_shutter_closed",
                 on_rightclick = function(pos, node, puncher)
                     minetest.env:add_node(pos, {name = "cottages:window_shutter_closed", param2 = node.param2})
+                    cottages_window_sutter_operate( pos, "cottages:window_shutter_open", "cottages:window_shutter_closed" );
                 end,
 })
 
@@ -70,6 +97,7 @@ minetest.register_node("cottages:window_shutter_closed", {
 		},
                 on_rightclick = function(pos, node, puncher)
                     minetest.env:add_node(pos, {name = "cottages:window_shutter_open", param2 = node.param2})
+                    cottages_window_sutter_operate( pos, "cottages:window_shutter_closed", "cottages:window_shutter_open" );
                 end,
 })
 
@@ -85,6 +113,7 @@ minetest.register_abm({
         if( not(minetest.env:get_timeofday() < 0.2 or minetest.env:get_timeofday() > 0.805)) then
            local old_node = minetest.env:get_node( pos );
            minetest.env:add_node(pos, {name = "cottages:window_shutter_open", param2 = old_node.param2})
+           cottages_window_sutter_operate( pos, "cottages:window_shutter_closed", "cottages:window_shutter_open" );
        end
    end
 })
@@ -101,6 +130,7 @@ minetest.register_abm({
         if( minetest.env:get_timeofday() < 0.2 or minetest.env:get_timeofday() > 0.805) then
            local old_node = minetest.env:get_node( pos );
            minetest.env:add_node(pos, {name = "cottages:window_shutter_closed", param2 = old_node.param2})
+           cottages_window_sutter_operate( pos, "cottages:window_shutter_open", "cottages:window_shutter_closed" );
         end
    end
 })

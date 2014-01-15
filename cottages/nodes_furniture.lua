@@ -357,3 +357,11 @@ minetest.register_craft({
 		{"default:clay",  },
 	}
 })
+
+minetest.register_craft({
+	output = "cottages:stovepipe 2",
+	recipe = {
+		{'default:steel_ingot', '', 'default:steel_ingot'},
+	}
+})
+

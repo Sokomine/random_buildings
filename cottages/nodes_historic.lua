@@ -41,6 +41,7 @@ minetest.register_node("cottages:feldweg", {
         sounds = default.node_sound_dirt_defaults,
 })
 
+
 -- people didn't use clay for houses; they did build with loam
 minetest.register_node("cottages:loam", {
         description = "loam",
@@ -50,6 +51,31 @@ minetest.register_node("cottages:loam", {
         groups = {crumbly=3},
         sounds = default.node_sound_dirt_defaults,
 })
+
+-- create stairs if possible
+if( stairs and stairs.register_stair_and_slab) then
+   stairs.register_stair_and_slab("feldweg", "cottages:feldweg",
+		{snappy=2,choppy=2,oddly_breakable_by_hand=2},
+		{"cottages_feldweg.png","default_dirt.png", "default_grass.png","default_grass.png","cottages_feldweg.png","cottages_feldweg.png"},
+		"Dirt Road Stairs",
+		"Dirt Road, half height",
+		default.node_sound_dirt_defaults())
+
+   stairs.register_stair_and_slab("loam", "cottages:loam",
+		{snappy=2,choppy=2,oddly_breakable_by_hand=2},
+		{"cottages_loam.png"},
+		"Loam Stairs",
+		"Loam Slab",
+		default.node_sound_dirt_defaults())
+
+   stairs.register_stair_and_slab("clay", "default:clay",
+	        {crumbly=3},
+		{"default_clay.png"},
+		"Clay Stairs",
+		"Clay Slab",
+		default.node_sound_dirt_defaults())
+end
+
 
 -- straw is a common material for places where animals are kept indoors
 -- right now, this block mostly serves as a placeholder
@@ -86,6 +112,7 @@ minetest.register_node("cottages:glass_pane", {
 			},
 		},
 })
+
 
 
 ---------------------------------------------------------------------------------------

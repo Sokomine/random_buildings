@@ -7,7 +7,7 @@
 
 
 -- create the three basic roof parts plus receipes for them;
-cottages.register_roof = function( name, tiles, basic_material )
+cottages.register_roof = function( name, tiles, basic_material, homedecor_alternative )
 
    minetest.register_node("cottages:roof_"..name, {
 		description = "Roof "..name,
@@ -88,14 +88,34 @@ cottages.register_roof = function( name, tiles, basic_material )
 		},
 	})
 
-   minetest.register_craft({
+
+   if( not( homedecor_alternative )
+       or ( minetest.get_modpath("homedecor") ~= nil )) then
+
+      minetest.register_craft({
 	output = "cottages:roof_"..name.." 6",
 	recipe = {
 		{'', '', basic_material },
 		{'', basic_material, '' },
 		{basic_material, '', '' }
 	}
-   })
+      })
+   end
+
+   -- make those roof parts that use homedecor craftable without that mod
+   if( homedecor_alternative ) then
+      basic_material = 'cottages:roof_wood';
+
+      minetest.register_craft({
+	output = "cottages:roof_"..name.." 3",
+	recipe = {
+		{homedecor_alternative, '', basic_material },
+		{'', basic_material, '' },
+		{basic_material, '', '' }
+	}
+      })
+   end
+
 
    minetest.register_craft({
 	output = "cottages:roof_connector_"..name,
@@ -112,6 +132,14 @@ cottages.register_roof = function( name, tiles, basic_material )
 	}
    })
 
+   -- convert flat roofs back to normal roofs
+   minetest.register_craft({
+	output = "cottages:roof_"..name,
+	recipe = {
+	        {"cottages:roof_flat_"..name, "cottages:roof_flat_"..name }
+	}
+   })
+
 end -- of cottages.register_roof( name, tiles, basic_material )
 
 
@@ -122,16 +150,16 @@ end -- of cottages.register_roof( name, tiles, basic_material )
 ---------------------------------------------------------------------------------------
 cottages.register_roof( 'straw',
 		{"cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png"},
-		'cottages:straw_mat' );
+		'cottages:straw_mat', nil );
 cottages.register_roof( 'wood',
 		{"default_tree.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","default_tree.png"},
-		'default:wood');
+		'default:wood', nil);
 cottages.register_roof( 'black',
 		{"cottages_homedecor_shingles_asphalt.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","cottages_homedecor_shingles_asphalt.png"},
-		'homedecor:shingles_asphalt');
+		'homedecor:shingles_asphalt', 'default:coal_lump');
 cottages.register_roof( 'red',
 		{"cottages_homedecor_shingles_terracotta.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","cottages_homedecor_shingles_terracotta.png"},
-		'homedecor:shingles_terracotta');
+		'homedecor:shingles_terracotta', 'default:clay_brick');
 cottages.register_roof( 'brown',
 		{"cottages_homedecor_shingles_wood.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","cottages_homedecor_shingles_wood.png"},
-		'homedecor:shingles_wood');
+		'homedecor:shingles_wood', 'default:dirt');
