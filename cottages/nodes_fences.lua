@@ -114,6 +114,16 @@ minetest.register_craft({
 	}
 })
 
+-- xfences can be configured to replace normal fences - which makes them uncraftable
+if ( minetest.get_modpath("xfences") ~= nil ) then
+   minetest.register_craft({
+	output = "cottages:fence_small 3",
+	recipe = {
+		{"xfences:fence","xfences:fence" },
+	}
+   })
+end
+
 minetest.register_craft({
 	output = "cottages:fence_corner",
 	recipe = {

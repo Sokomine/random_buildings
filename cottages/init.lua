@@ -4,6 +4,7 @@
 -- License: GPLv3
 --
 -- Modified:
+-- 17.01.13 Added alternate receipe for fences in case of interference due to xfences
 -- 14.01.13 Added alternate receipes for roof parts in case homedecor is not installed.
 --          Added receipe for stove pipe, tub and barrel.
 --          Added stairs/slabs for dirt road, loam and clay
