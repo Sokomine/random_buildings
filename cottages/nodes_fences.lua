@@ -1,10 +1,10 @@
-
+-- 22.01.13 Changed texture to that of the wood from the minimal development game
 
 minetest.register_node("cottages:fence_small", {
 		description = "small fence",
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
-		tiles = {"default_wood.png"},
+		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
 		is_ground_content = true,
@@ -33,7 +33,7 @@ minetest.register_node("cottages:fence_corner", {
 		description = "small fence corner",
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
-		tiles = {"default_wood.png"},
+		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
 		is_ground_content = true,
@@ -69,7 +69,7 @@ minetest.register_node("cottages:fence_end", {
 		description = "small fence end",
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
-		tiles = {"default_wood.png"},
+		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
 		is_ground_content = true,

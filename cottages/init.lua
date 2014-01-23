@@ -4,6 +4,9 @@
 -- License: GPLv3
 --
 -- Modified:
+-- 23.01.14 Added hammer and anvil as decoration and for repairing tools.
+--          Added hatches (wood and steel).
+--          Changed the texture of the fence/handrail.
 -- 17.01.13 Added alternate receipe for fences in case of interference due to xfences
 -- 14.01.13 Added alternate receipes for roof parts in case homedecor is not installed.
 --          Added receipe for stove pipe, tub and barrel.
@@ -20,6 +23,7 @@ cottages = {}
 dofile(minetest.get_modpath("cottages").."/nodes_furniture.lua");
 dofile(minetest.get_modpath("cottages").."/nodes_historic.lua");
 dofile(minetest.get_modpath("cottages").."/nodes_straw.lua");
+dofile(minetest.get_modpath("cottages").."/nodes_anvil.lua");
 dofile(minetest.get_modpath("cottages").."/nodes_doorlike.lua");
 dofile(minetest.get_modpath("cottages").."/nodes_fences.lua");
 dofile(minetest.get_modpath("cottages").."/nodes_roof.lua");

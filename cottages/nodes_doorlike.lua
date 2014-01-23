@@ -290,6 +290,76 @@ minetest.register_node("cottages:gate_open", {
 })
 
 
+
+-----------------------------------------------------------------------------------------------------------
+-- a hatch; nodebox definition taken from realtest
+-----------------------------------------------------------------------------------------------------------
+
+-- hatches rotate around their axis
+--  old facedir:  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23
+new_facedirs = { 10,19, 4,13, 2,18,22,14,20,16, 0,12,11, 3, 7,21, 9,23, 5, 1, 8,15, 6,17};
+
+
+cottages.register_hatch = function( nodename, description, texture, receipe_item )
+
+	minetest.register_node( nodename, {
+		description = description, -- not that there are any other...
+		drawtype = "nodebox",
+                -- top, bottom, side1, side2, inner, outer
+		tiles = { texture }, 
+		paramtype = "light",
+		paramtype2 = "facedir",
+		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
+
+                node_box = {
+                        type = "fixed",
+                        fixed = {
+                                {-0.49, -0.55, -0.49, -0.3, -0.45, 0.45},
+--                                {-0.5, -0.55, 0.3, 0.3, -0.45, 0.5},
+                                {0.3, -0.55, -0.3, 0.49, -0.45, 0.45},
+                                {0.49, -0.55, -0.49, -0.3, -0.45, -0.3},
+                                {-0.075, -0.55, -0.3, 0.075, -0.45, 0.3},
+                                {-0.3, -0.55, -0.075, -0.075, -0.45, 0.075},
+                                {0.075, -0.55, -0.075, 0.3, -0.45, 0.075},
+
+                                {-0.3, -0.55, 0.3, 0.3, -0.45, 0.45},
+
+				-- hinges
+      				{-0.45,-0.530, 0.45, -0.15,-0.470, 0.525}, 
+      				{ 0.15,-0.530, 0.45,  0.45,-0.470, 0.525}, 
+
+				-- handle
+      				{-0.05,-0.60,-0.35, 0.05,-0.40,-0.45}, 
+                        },
+                },
+                selection_box = {
+                        type = "fixed",
+                        fixed = {-0.5, -0.55, -0.5, 0.5, -0.45, 0.5},
+                },
+                on_rightclick = function(pos, node, puncher)
+
+                    minetest.env:add_node(pos, {name = node.name, param2 = new_facedirs[ node.param2+1 ]})
+                end,
+	})
+
+	minetest.register_craft({
+		output = nodename,
+		recipe = {
+			{ '',           '',              receipe_item },
+			{ receipe_item, 'default:stick', ''           },
+			{ '',           '',              ''           },
+		}
+	})
+end
+
+
+-- further alternate hatch materials: wood, tree, copper_block
+cottages.register_hatch( 'cottages:hatch_wood',  'wooden hatch', 'cottages_minimal_wood.png', 'stairs:slab_wood' );
+cottages.register_hatch( 'cottages:hatch_steel', 'metal hatch',  'default_steel_block.png',   'default:steel_ingot' );
+
+
+
+
 -----------------------------------------------------------------------------------------------------------
 -- and now the crafting receipes:
 -----------------------------------------------------------------------------------------------------------
@@ -361,3 +431,4 @@ minetest.register_craft({
 		{"default:stick", "default:stick", "default:wood" },
 	}
 })
+
