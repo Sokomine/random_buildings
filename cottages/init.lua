@@ -4,6 +4,7 @@
 -- License: GPLv3
 --
 -- Modified:
+-- 23.01.14 Added conversion receipes in case of installed castle-mod (has its own anvil)
 -- 23.01.14 Added hammer and anvil as decoration and for repairing tools.
 --          Added hatches (wood and steel).
 --          Changed the texture of the fence/handrail.
