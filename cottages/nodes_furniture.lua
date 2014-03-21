@@ -79,7 +79,7 @@ minetest.register_node("cottages:bed_head", {
 -- the basic version of a bed - a sleeping mat
 -- to facilitate upgrade path straw mat -> sleeping mat -> bed, this uses a nodebox
 minetest.register_node("cottages:sleeping_mat", {
-        description = "sleeping matg",
+        description = "sleeping mat",
         drawtype = 'nodebox',
         tiles = { 'cottages_sleepingmat.png' }, -- done by VanessaE
         wield_image = 'cottages_sleepingmat.png',
