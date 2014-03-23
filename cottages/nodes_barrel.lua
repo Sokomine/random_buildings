@@ -20,6 +20,15 @@
 -- horizontal: if 1, then x and y coordinates will be swapped
 
 -- TODO: option so that it works without nodeboxes
+
+-- Boilerplate to support localized strings if intllib mod is installed.
+local S
+if intllib then
+  S = intllib.Getter()
+else
+  S = function(s) return s end
+end
+
 barrel = {};
 
 barrel.make_pipe = function( pipes, horizontal )
@@ -97,9 +106,9 @@ barrel.on_construct = function( pos )
                                "size[8,9]"..
                                 "image[2.6,2;2,3;default_sandstone.png^[lowpart:"..
                                                 (100-percent)..":default_desert_stone.png]".. -- TODO: better images
-                                "label[2.2,0;Pour:]"..
+                                "label[2.2,0;"..S("Pour:").."]"..
                                 "list[current_name;input;3,0.5;1,1;]"..
-                                "label[5,3.3;Fill:]"..
+                                "label[5,3.3;"..S("Fill:").."]"..
                                 "list[current_name;output;5,3.8;1,1;]"..
                                 "list[current_player;main;0,5;8,4;]");
 
@@ -131,7 +140,7 @@ end
 
 -- right-click to open/close barrel; punch to switch between horizontal/vertical position
         minetest.register_node("cottages:barrel", {
-                description = "barrel (closed)",
+                description = S("barrel (closed)"),
                 paramtype = "light",
                 tiles = {"cottages_minimal_wood.png","cottages_minimal_wood.png","cottages_barrel.png"}, -- "default_tree_top.png", "default_tree_top.png", "default_tree.png"},
                 is_ground_content = true,
@@ -168,7 +177,7 @@ end
 
         -- this barrel is opened at the top
         minetest.register_node("cottages:barrel_open", {
-                description = "barrel (open)",
+                description = S("barrel (open)"),
                 paramtype = "light",
                 tiles = {"cottages_minimal_wood.png","cottages_minimal_wood.png","cottages_barrel.png"},--"default_tree_top.png", "default_tree_top.png", "default_tree.png"},
                 is_ground_content = true,
@@ -193,7 +202,7 @@ end
 
         -- horizontal barrel
         minetest.register_node("cottages:barrel_lying", {
-                description = "barrel (closed), lying somewhere",
+                description = S("barrel (closed), lying somewhere"),
                 paramtype = "light",
 	        paramtype2 = "facedir",
                 tiles = {"cottages_barrel_lying.png","cottages_barrel_lying.png","cottages_minimal_wood.png","cottages_minimal_wood.png","cottages_barrel_lying.png"},--"default_tree_top.png", "default_tree_top.png", "default_tree.png"},
@@ -223,7 +232,7 @@ end
 
         -- horizontal barrel, open
         minetest.register_node("cottages:barrel_lying_open", {
-                description = "barrel (opened), lying somewhere",
+                description = S("barrel (opened), lying somewhere"),
                 paramtype = "light",
 	        paramtype2 = "facedir",
                 tiles = {"cottages_barrel_lying.png","cottages_barrel_lying.png","cottages_minimal_wood.png","cottages_minimal_wood.png","cottages_barrel_lying.png"},--"default_tree_top.png", "default_tree_top.png", "default_tree.png"},
@@ -254,7 +263,7 @@ end
 
         -- let's hope "tub" is the correct english word for "bottich"
         minetest.register_node("cottages:tub", {
-                description = "tub",
+                description = S("tub"),
                 paramtype = "light",
                 tiles = {"cottages_minimal_wood.png","cottages_minimal_wood.png","cottages_barrel.png"},--"default_tree_top.png", "default_tree_top.png", "default_tree.png"},
                 is_ground_content = true,
