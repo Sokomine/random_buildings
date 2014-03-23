@@ -1,4 +1,10 @@
-
+-- Boilerplate to support localized strings if intllib mod is installed.
+local S
+if intllib then
+	S = intllib.Getter()
+else
+	S = function(s) return s end
+end
 
 ---------------------------------------------------------------------------------------
 -- roof parts
@@ -10,7 +16,7 @@
 cottages.register_roof = function( name, tiles, basic_material, homedecor_alternative )
 
    minetest.register_node("cottages:roof_"..name, {
-		description = "Roof "..name,
+		description = S("Roof "..name),
 		drawtype = "nodebox",
 		--tiles = {"default_tree.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","default_tree.png"},
 		tiles = tiles,
@@ -36,7 +42,7 @@ cottages.register_roof = function( name, tiles, basic_material, homedecor_altern
 
    -- a better roof than the normal stairs; this one is for usage directly on top of walls (it has the form of a stair)
    minetest.register_node("cottages:roof_connector_"..name, {
-		description = "Roof connector "..name,
+		description = S("Roof connector "..name),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		--tiles = {"default_tree.png","default_wood.png","default_tree.png","default_tree.png","default_wood.png","default_tree.png"},
@@ -64,7 +70,7 @@ cottages.register_roof = function( name, tiles, basic_material, homedecor_altern
 
    -- this one is the slab version of the above roof
    minetest.register_node("cottages:roof_flat_"..name, {
-		description = "Roof (flat) "..name,
+		description = S("Roof (flat) "..name),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		--tiles = {"default_tree.png","default_wood.png","default_tree.png","default_tree.png","default_wood.png","default_tree.png"},
