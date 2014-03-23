@@ -4,11 +4,18 @@
 --  * straw mat - for animals and very poor NPC; also basis for other straw things
 --  * straw bale - well, just a good source for building and decoration
 
+-- Boilerplate to support localized strings if intllib mod is installed.
+local S
+if intllib then
+	S = intllib.Getter()
+else
+	S = function(s) return s end
+end
 
 -- an even simpler from of bed - usually for animals 
 -- it is a nodebox and not wallmounted because that makes it easier to replace beds with straw mats
 minetest.register_node("cottages:straw_mat", {
-        description = "layer of straw",
+        description = S("layer of straw"),
         drawtype = 'nodebox',
         tiles = { 'cottages_darkage_straw.png' }, -- done by VanessaE
         wield_image = 'cottages_darkage_straw.png',
@@ -37,7 +44,7 @@ minetest.register_node("cottages:straw_mat", {
 -- straw bales are a must for farming environments; if you for some reason do not have the darkage mod installed, this here gets you a straw bale
 minetest.register_node("cottages:straw_bale", {
 	drawtype = "nodebox",
-	description = "straw bale",
+	description = S("straw bale"),
 	tiles = {"cottages_darkage_straw_bale.png"},
 	paramtype = "light",
 	groups = {snappy=1,choppy=2,oddly_breakable_by_hand=2,flammable=3},
@@ -60,7 +67,7 @@ minetest.register_node("cottages:straw_bale", {
 -- just straw
 minetest.register_node("cottages:straw", {
 	drawtype = "normal",
-	description = "straw",
+	description = S("straw"),
 	tiles = {"cottages_darkage_straw.png"},
 	groups = {snappy=3,choppy=3,oddly_breakable_by_hand=3,flammable=3},
 	sounds = default.node_sound_wood_defaults(),
@@ -70,7 +77,7 @@ minetest.register_node("cottages:straw", {
 
 minetest.register_node("cottages:threshing_floor", {
 	drawtype = "nodebox",
-	description = "threshing floor",
+	description = S("threshing floor"),
 -- TODO: stone also looks pretty well for this
 	tiles = {"default_junglewood.png^farming_wheat.png","default_junglewood.png","default_junglewood.png^default_stick.png"},
 	paramtype  = "light",
@@ -97,7 +104,7 @@ minetest.register_node("cottages:threshing_floor", {
 	on_construct = function(pos)
 
                	local meta = minetest.env:get_meta(pos);
-               	meta:set_string("infotext", "Threshing floor");
+               	meta:set_string("infotext", S("Threshing floor"));
                	local inv = meta:get_inventory();
                	inv:set_size("harvest", 2);
                	inv:set_size("straw", 4);
@@ -107,8 +114,7 @@ minetest.register_node("cottages:threshing_floor", {
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos);
 		meta:set_string("owner", placer:get_player_name() or "");
-		meta:set_string("infotext", "Threshing floor (owned by "..
-                                meta:get_string("owner")..")");
+		meta:set_string("infotext", S("Threshing floor (owned by %s)"):format(meta:get_string("owner") or ""));
                 meta:set_string("formspec",
                                "size[8,8]"..
 				"image[1.5,0;1,1;default_stick.png]"..
@@ -116,13 +122,13 @@ minetest.register_node("cottages:threshing_floor", {
                                 "list[current_name;harvest;1,1;2,1;]"..
                                 "list[current_name;straw;5,0;2,2;]"..
                                 "list[current_name;seeds;5,2;2,2;]"..
-					"label[1,0.5;Harvested wheat:]"..
-					"label[4,0.0;Straw:]"..
-					"label[4,2.0;Seeds:]"..
-					"label[0,-0.5;Threshing floor]"..
-					"label[2.5,-0.5;Owner: "..minetest.formspec_escape( meta:get_string('owner') ).."]"..
-					"label[0,2.5;Punch threshing floor with a stick]"..
-					"label[0,3.0;to get straw and seeds from wheat.]"..
+					"label[1,0.5;"..S("Harvested wheat:").."]"..
+					"label[4,0.0;"..S("Straw:").."]"..
+					"label[4,2.0;"..S("Seeds:").."]"..
+					"label[0,-0.5;"..S("Threshing floor").."]"..
+					"label[2.5,-0.5;"..S("Owner: %s"):format(meta:get_string("owner") or "").."]"..
+					"label[0,2.5;"..S("Punch threshing floor with a stick").."]"..
+					"label[0,3.0;"..S("to get straw and seeds from wheat.").."]"..
                                 "list[current_player;main;0,4;8,4;]");
         end,
 
@@ -227,9 +233,9 @@ minetest.register_node("cottages:threshing_floor", {
 
 			local anz_left = found_wheat - anz_wheat;
 			if( anz_left > 0 ) then
-				minetest.chat_send_player( name, 'You have threshed '..tostring( anz_wheat )..' wheat ('..tostring( anz_left )..' are left).');
+				minetest.chat_send_player( name, S('You have threshed %s wheat (%s are left).'):format(anz_wheat,anz_left));
 			else
-				minetest.chat_send_player( name, 'You have threshed the last '..tostring( anz_wheat )..' wheat.');
+				minetest.chat_send_player( name, S('You have threshed the last %s wheat.'):format(anz_wheat));
 			end
 		end	
 	end,
@@ -239,7 +245,7 @@ minetest.register_node("cottages:threshing_floor", {
 
 minetest.register_node("cottages:handmill", {
 	drawtype = "nodebox",
-	description = "mill, powered by punching",
+	description = S("mill, powered by punching"),
 	tiles = {"default_stone.png"},
 	paramtype  = "light",
         paramtype2 = "facedir",
@@ -279,7 +285,7 @@ minetest.register_node("cottages:handmill", {
 	on_construct = function(pos)
 
                	local meta = minetest.env:get_meta(pos);
-               	meta:set_string("infotext", "Mill, powered by punching");
+               	meta:set_string("infotext", S("Mill, powered by punching"));
                	local inv = meta:get_inventory();
                	inv:set_size("seeds", 1);
                	inv:set_size("flour", 4);
@@ -288,19 +294,18 @@ minetest.register_node("cottages:handmill", {
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos);
 		meta:set_string("owner", placer:get_player_name() or "");
-		meta:set_string("infotext", "Mill, powered by punching (owned by "..
-                                meta:get_string("owner")..")");
+		meta:set_string("infotext", S("Mill, powered by punching (owned by %s)"):format(meta:get_string("owner") or ""));
                 meta:set_string("formspec",
                                "size[8,8]"..
 				"image[0,1;1,1;farming_wheat_seed.png]"..
                                 "list[current_name;seeds;1,1;1,1;]"..
                                 "list[current_name;flour;5,1;2,2;]"..
-					"label[0,0.5;Wheat seeds:]"..
-					"label[4,0.5;Flour:]"..
-					"label[0,-0.5;Mill]"..
-					"label[2.5,-0.5;Owner: "..minetest.formspec_escape( meta:get_string('owner') ).."]"..
-					"label[0,2.5;Punch this hand-driven mill]"..
-					"label[0,3.0;to convert wheat seeds into flour.]"..
+					"label[0,0.5;"..S("Wheat seeds:").."]"..
+					"label[4,0.5;"..S("Flour:").."]"..
+					"label[0,-0.5;"..S("Mill").."]"..
+					"label[2.5,-0.5;"..S("Owner: %s"):format(meta:get_string('owner') or "").."]"..
+					"label[0,2.5;"..S("Punch this hand-driven mill").."]"..
+					"label[0,3.0;"..S("to convert wheat seeds into flour.").."]"..
                                 "list[current_player;main;0,4;8,4;]");
         end,
 
@@ -388,9 +393,9 @@ minetest.register_node("cottages:handmill", {
 
 			local anz_left = found - anz;
 			if( anz_left > 0 ) then
-				minetest.chat_send_player( name, 'You have grinded '..tostring( anz )..' wheat seeds ('..tostring( anz_left )..' are left).');
+				minetest.chat_send_player( name, S('You have grinded %s wheat seeds (%s are left).'):format(anz,anz_left));
 			else
-				minetest.chat_send_player( name, 'You have grinded the last '..tostring( anz )..' wheat seeds.');
+				minetest.chat_send_player( name, S('You have grinded the last %s wheat seeds.'):format(anz));
 			end
 
 			-- if the version of MT is recent enough, rotate the mill a bit
