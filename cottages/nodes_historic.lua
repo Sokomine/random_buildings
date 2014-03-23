@@ -8,9 +8,17 @@
 -- * glass pane - an improvement compared to fence posts as windows :-)
 ---------------------------------------------------------------------------------------
 
+-- Boilerplate to support localized strings if intllib mod is installed.
+local S
+if intllib then
+	S = intllib.Getter()
+else
+	S = function(s) return s end
+end
+
 -- can be used to buid real stationary wagons or attached to walls as decoration
 minetest.register_node("cottages:wagon_wheel", {
-        description = "wagon wheel",
+        description = S("wagon wheel"),
         drawtype = "signlike",
         tiles = {"cottages_wagonwheel.png"}, -- done by VanessaE!
         inventory_image = "cottages_wagonwheel.png",
@@ -31,7 +39,7 @@ minetest.register_node("cottages:wagon_wheel", {
 
 -- a nice dirt road for small villages or paths to fields
 minetest.register_node("cottages:feldweg", {
-        description = "dirt road",
+        description = S("dirt road"),
         tiles = {"cottages_feldweg.png","default_dirt.png", "default_dirt.png^default_grass_side.png"},
 	paramtype2 = "facedir",
 	groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
@@ -44,7 +52,7 @@ minetest.register_node("cottages:feldweg", {
 
 -- people didn't use clay for houses; they did build with loam
 minetest.register_node("cottages:loam", {
-        description = "loam",
+        description = S("loam"),
         tiles = {"cottages_loam.png"},
 	groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
         is_ground_content = true,
@@ -57,22 +65,22 @@ if( stairs and stairs.register_stair_and_slab) then
    stairs.register_stair_and_slab("feldweg", "cottages:feldweg",
 		{snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		{"cottages_feldweg.png","default_dirt.png", "default_grass.png","default_grass.png","cottages_feldweg.png","cottages_feldweg.png"},
-		"Dirt Road Stairs",
-		"Dirt Road, half height",
+		S("Dirt Road Stairs"),
+		S("Dirt Road, half height"),
 		default.node_sound_dirt_defaults())
 
    stairs.register_stair_and_slab("loam", "cottages:loam",
 		{snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		{"cottages_loam.png"},
-		"Loam Stairs",
-		"Loam Slab",
+		S("Loam Stairs"),
+		S("Loam Slab"),
 		default.node_sound_dirt_defaults())
 
    stairs.register_stair_and_slab("clay", "default:clay",
 	        {crumbly=3},
 		{"default_clay.png"},
-		"Clay Stairs",
-		"Clay Slab",
+		S("Clay Stairs"),
+		S("Clay Slab"),
 		default.node_sound_dirt_defaults())
 end
 
@@ -80,7 +88,7 @@ end
 -- straw is a common material for places where animals are kept indoors
 -- right now, this block mostly serves as a placeholder
 minetest.register_node("cottages:straw_ground", {
-        description = "straw ground for animals",
+        description = S("straw ground for animals"),
         tiles = {"cottages_darkage_straw.png","cottages_loam.png","cottages_loam.png","cottages_loam.png","cottages_loam.png","cottages_loam.png"},
 	groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
         is_ground_content = true,
@@ -91,7 +99,7 @@ minetest.register_node("cottages:straw_ground", {
 
 -- note: these houses look good with a single fence pile as window! the glass pane is the version for 'richer' inhabitants
 minetest.register_node("cottages:glass_pane", {
-		description = "simple glass pane",
+		description = S("simple glass pane"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"cottages_glass_pane.png"},
