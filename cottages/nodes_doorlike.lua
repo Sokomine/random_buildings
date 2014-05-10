@@ -10,7 +10,13 @@
 --                   abm that opens/closes the window shutters is called. Anything less than 10 minutes
 --                   (600 seconds) ought to be ok.
 -----------------------------------------------------------------------------------------------------------
-
+-- Boilerplate to support localized strings if intllib mod is installed.
+local S
+if intllib then
+  S = intllib.Getter()
+else
+  S = function(s) return s end
+end
 
 -----------------------------------------------------------------------------------------------------------
 -- small window shutters for single-node-windows; they open at day and close at night if the abm is working
@@ -44,7 +50,7 @@ end
 
 -- window shutters - they cover half a node to each side
 minetest.register_node("cottages:window_shutter_open", {
-		description = "opened window shutters",
+		description = S("opened window shutters"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"cottages_minimal_wood.png"},
@@ -74,7 +80,7 @@ minetest.register_node("cottages:window_shutter_open", {
 })
 
 minetest.register_node("cottages:window_shutter_closed", {
-		description = "closed window shutters",
+		description = S("closed window shutters"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"cottages_minimal_wood.png"},
@@ -140,7 +146,7 @@ minetest.register_abm({
 -- a half door; can be combined to a full door where the upper part can be operated seperately; usually found in barns/stables
 ------------------------------------------------------------------------------------------------------------------------------
 minetest.register_node("cottages:half_door", {
-		description = "half door",
+		description = S("half door"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"cottages_minimal_wood.png"},
@@ -181,7 +187,7 @@ minetest.register_node("cottages:half_door", {
 
 
 minetest.register_node("cottages:half_door_inverted", {
-		description = "half door inverted",
+		description = S("half door inverted"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"cottages_minimal_wood.png"},
@@ -225,7 +231,7 @@ minetest.register_node("cottages:half_door_inverted", {
 -- this gate for fences solves the "where to store the opened gate" problem by dropping it to the floor in optened state
 ------------------------------------------------------------------------------------------------------------------------------
 minetest.register_node("cottages:gate_closed", {
-		description = "closed fence gate",
+		description = S("closed fence gate"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"default_wood.png"},
@@ -257,7 +263,7 @@ minetest.register_node("cottages:gate_closed", {
 
 
 minetest.register_node("cottages:gate_open", {
-		description = "opened fence gate",
+		description = S("opened fence gate"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"default_wood.png"},
@@ -303,7 +309,7 @@ new_facedirs = { 10,19, 4,13, 2,18,22,14,20,16, 0,12,11, 3, 7,21, 9,23, 5, 1, 8,
 cottages.register_hatch = function( nodename, description, texture, receipe_item )
 
 	minetest.register_node( nodename, {
-		description = description, -- not that there are any other...
+		description = S(description), -- not that there are any other...
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = { texture }, 

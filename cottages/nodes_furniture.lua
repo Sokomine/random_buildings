@@ -13,9 +13,17 @@
 ---------------------------------------------------------------------------------------
 -- TODO: change the textures of the bed (make the clothing white, foot path not entirely covered with cloth)
 
+-- Boilerplate to support localized strings if intllib mod is installed.
+local S
+if intllib then
+	S = intllib.Getter()
+else
+	S = function(s) return s end
+end
+
 -- a bed without functionality - just decoration
 minetest.register_node("cottages:bed_foot", {
-	description = "Bed (foot region)",
+	description = S("Bed (foot region)"),
 	drawtype = "nodebox",
 	tiles = {"cottages_beds_bed_top_bottom.png", "default_wood.png",  "cottages_beds_bed_side.png",  "cottages_beds_bed_side.png",  "cottages_beds_bed_side.png",  "cottages_beds_bed_side.png"},
 	paramtype = "light",
@@ -46,7 +54,7 @@ minetest.register_node("cottages:bed_foot", {
 
 -- the bed is split up in two parts to avoid destruction of blocks on placement
 minetest.register_node("cottages:bed_head", {
-	description = "Bed (head region)",
+	description = S("Bed (head region)"),
 	drawtype = "nodebox",
 	tiles = {"cottages_beds_bed_top_top.png", "default_wood.png",  "cottages_beds_bed_side_top_r.png",  "cottages_beds_bed_side_top_l.png",  "default_wood.png",  "cottages_beds_bed_side.png"},
 	paramtype = "light",
@@ -79,7 +87,7 @@ minetest.register_node("cottages:bed_head", {
 -- the basic version of a bed - a sleeping mat
 -- to facilitate upgrade path straw mat -> sleeping mat -> bed, this uses a nodebox
 minetest.register_node("cottages:sleeping_mat", {
-        description = "sleeping mat",
+        description = S("sleeping mat"),
         drawtype = 'nodebox',
         tiles = { 'cottages_sleepingmat.png' }, -- done by VanessaE
         wield_image = 'cottages_sleepingmat.png',
@@ -113,7 +121,7 @@ minetest.register_node("cottages:sleeping_mat", {
 -- furniture; possible replacement: 3dforniture:chair
 minetest.register_node("cottages:bench", {
 	drawtype = "nodebox",
-	description = "simple wooden bench",
+	description = S("simple wooden bench"),
 	tiles = {"cottages_minimal_wood.png", "cottages_minimal_wood.png",  "cottages_minimal_wood.png",  "cottages_minimal_wood.png",  "cottages_minimal_wood.png",  "cottages_minimal_wood.png"},
 	paramtype = "light",
 	paramtype2 = "facedir",
@@ -141,7 +149,7 @@ minetest.register_node("cottages:bench", {
 
 -- a simple table; possible replacement: 3dforniture:table
 minetest.register_node("cottages:table", {
-		description = "table",
+		description = S("table"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"cottages_minimal_wood.png"},
@@ -168,7 +176,7 @@ minetest.register_node("cottages:table", {
 -- looks better than two slabs impersonating a shelf; also more 3d than a bookshelf 
 -- the infotext shows if it's empty or not
 minetest.register_node("cottages:shelf", {
-		description = "open storage shelf",
+		description = S("open storage shelf"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"cottages_minimal_wood.png"},
@@ -202,7 +210,7 @@ minetest.register_node("cottages:shelf", {
                                 "size[8,8]"..
                                 "list[current_name;main;0,0;8,3;]"..
                                 "list[current_player;main;0,4;8,4;]")
-                	meta:set_string("infotext", "open storage shelf")
+                	meta:set_string("infotext", S("open storage shelf"))
                 	local inv = meta:get_inventory();
                 	inv:set_size("main", 24);
         	end,
@@ -215,13 +223,13 @@ minetest.register_node("cottages:shelf", {
 
                 on_metadata_inventory_put  = function(pos, listname, index, stack, player)
 	                local  meta = minetest.env:get_meta( pos );
-                        meta:set_string('infotext','open storage shelf (in use)');
+                        meta:set_string('infotext', S('open storage shelf (in use)'));
                 end,
                 on_metadata_inventory_take = function(pos, listname, index, stack, player)
 	                local  meta = minetest.env:get_meta( pos );
 	                local  inv = meta:get_inventory();
 	                if( inv:is_empty("main")) then
-                           meta:set_string('infotext','open storage shelf (empty)');
+                           meta:set_string('infotext', S('open storage shelf (empty)'));
                         end
                 end,
 
@@ -230,7 +238,7 @@ minetest.register_node("cottages:shelf", {
 
 -- so that the smoke from a furnace can get out of a building
 minetest.register_node("cottages:stovepipe", {
-		description = "stovepipe",
+		description = S("stovepipe"),
 		drawtype = "nodebox",
 		tiles = {"default_steel_block.png"},
 		paramtype = "light",
@@ -254,7 +262,7 @@ minetest.register_node("cottages:stovepipe", {
 
 -- this washing place can be put over a water source (it is open at the bottom)
 minetest.register_node("cottages:washing", {
-		description = "washing place",
+		description = S("washing place"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"default_clay.png"},
@@ -285,9 +293,9 @@ minetest.register_node("cottages:washing", {
                    -- works only with water beneath
                    local node_under = minetest.env:get_node( {x=pos.x, y=(pos.y-1), z=pos.z} );
 		   if( not( node_under ) or node_under.name == "ignore" or (node_under.name ~= 'default:water_source' and node_under.name ~= 'default:water_flowing')) then
-                      minetest.chat_send_player( player:get_player_name(), "Sorry. This washing place is out of water. Please place it above water!");
+                      minetest.chat_send_player( player:get_player_name(), S("Sorry. This washing place is out of water. Please place it above water!"));
 		   else
-                      minetest.chat_send_player( player:get_player_name(), "You feel much cleaner after some washing.");
+                      minetest.chat_send_player( player:get_player_name(), S("You feel much cleaner after some washing."));
 		   end
                 end,
 

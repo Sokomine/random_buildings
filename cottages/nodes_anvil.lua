@@ -7,9 +7,17 @@
 -- License of the hammer picture: CC-by-SA; done by GloopMaster; source:
 --   https://github.com/GloopMaster/glooptest/blob/master/glooptest/textures/glooptest_tool_steelhammer.png
 
+-- Boilerplate to support localized strings if intllib mod is installed.
+local S
+if intllib then
+	S = intllib.Getter()
+else
+	S = function(s) return s end
+end
+
 -- the hammer for the anvil
 minetest.register_tool("cottages:hammer", {
-        description = "Steel hammer for repairing tools on the anvil",
+        description = S("Steel hammer for repairing tools on the anvil"),
         image           = "glooptest_tool_steelhammer.png",
         inventory_image = "glooptest_tool_steelhammer.png",
 
@@ -28,7 +36,7 @@ minetest.register_tool("cottages:hammer", {
 
 minetest.register_node("cottages:anvil", {
 	drawtype = "nodebox",
-	description = "anvil",
+	description = S("anvil"),
 	tiles = {"default_stone.png"}, -- TODO default_steel_block.png,  default_obsidian.png are also nice
 	paramtype  = "light",
         paramtype2 = "facedir",
@@ -55,7 +63,7 @@ minetest.register_node("cottages:anvil", {
 	on_construct = function(pos)
 
                	local meta = minetest.env:get_meta(pos);
-               	meta:set_string("infotext", "Anvil");
+               	meta:set_string("infotext", S("Anvil"));
                	local inv = meta:get_inventory();
                	inv:set_size("input",    1);
 --               	inv:set_size("material", 9);
@@ -66,8 +74,7 @@ minetest.register_node("cottages:anvil", {
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos);
 		meta:set_string("owner", placer:get_player_name() or "");
-		meta:set_string("infotext", "Anvil (owned by "..
-                                meta:get_string("owner")..")");
+		meta:set_string("infotext", S("Anvil (owned by %s)"):format((meta:get_string("owner") or "")));
                 meta:set_string("formspec",
                                "size[8,8]"..
 				"image[7,3;1,1;glooptest_tool_steelhammer.png]"..
@@ -77,16 +84,16 @@ minetest.register_node("cottages:anvil", {
                                 "list[current_name;hammer;5,3;1,1;]"..
 --					"label[0.0,0.0;Sample:]"..
 --					"label[0.0,1.0;(Receipe)]"..
-					"label[2.5,1.0;Workpiece:]"..
+					"label[2.5,1.0;"..S("Workpiece:").."]"..
 --					"label[6.0,-0.5;Materials:]"..
-					"label[6.0,2.7;Optional]"..
-					"label[6.0,3.0;storage for]"..
-					"label[6.0,3.3;your hammer]"..
+					"label[6.0,2.7;"..S("Optional").."]"..
+					"label[6.0,3.0;"..S("storage for").."]"..
+					"label[6.0,3.3;"..S("your hammer").."]"..
 
-					"label[0,-0.5;Anvil]"..
-					"label[2.5,-0.5;Owner: "..minetest.formspec_escape( meta:get_string('owner') ).."]"..
-					"label[0,3.0;Punch anvil with hammer to]"..
-					"label[0,3.3;repair tool in workpiece-slot.]"..
+					"label[0,-0.5;"..S("Anvil").."]"..
+					"label[2.5,-0.5;"..S("Owner: %s"):format(meta:get_string('owner') or "").."]"..
+					"label[0,3.0;"..S("Punch anvil with hammer to").."]"..
+					"label[0,3.3;"..S("repair tool in workpiece-slot.").."]"..
                                 "list[current_player;main;0,4;8,4;]");
         end,
 
@@ -130,7 +137,7 @@ minetest.register_node("cottages:anvil", {
                    or stack:get_name() == "technic:lava_can" )) then
 
 			minetest.chat_send_player( player:get_player_name(),
-				'The workpiece slot is for damaged tools only.');
+				S('The workpiece slot is for damaged tools only.'));
 			return 0;
 		end
 		return stack:get_count()
@@ -172,7 +179,7 @@ minetest.register_node("cottages:anvil", {
 		-- tell the player when the job is done
 		if(   input:get_wear() == 0 ) then
 			minetest.chat_send_player( puncher:get_player_name(),
-				'Your tool has been repaired successfully.');
+				S('Your tool has been repaired successfully.'));
 			return;
 		end
 
@@ -187,7 +194,7 @@ minetest.register_node("cottages:anvil", {
 		-- do not spam too much
 		if( math.random( 1,5 )==1 ) then
 			minetest.chat_send_player( puncher:get_player_name(),
-				'Your workpiece improves.');
+				S('Your workpiece improves.'));
 		end
 	end,
 })

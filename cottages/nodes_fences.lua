@@ -1,7 +1,15 @@
 -- 22.01.13 Changed texture to that of the wood from the minimal development game
 
+-- Boilerplate to support localized strings if intllib mod is installed.
+local S
+if intllib then
+	S = intllib.Getter()
+else
+	S = function(s) return s end
+end
+
 minetest.register_node("cottages:fence_small", {
-		description = "small fence",
+		description = S("small fence"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"cottages_minimal_wood.png"},
@@ -30,7 +38,7 @@ minetest.register_node("cottages:fence_small", {
 
 
 minetest.register_node("cottages:fence_corner", {
-		description = "small fence corner",
+		description = S("small fence corner"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"cottages_minimal_wood.png"},
@@ -66,7 +74,7 @@ minetest.register_node("cottages:fence_corner", {
 
 
 minetest.register_node("cottages:fence_end", {
-		description = "small fence end",
+		description = S("small fence end"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"cottages_minimal_wood.png"},
