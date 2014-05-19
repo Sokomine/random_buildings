@@ -157,6 +157,9 @@ end -- of cottages.register_roof( name, tiles, basic_material )
 cottages.register_roof( 'straw',
 		{"cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png","cottages_darkage_straw.png"},
 		'cottages:straw_mat', nil );
+cottages.register_roof( 'reet',
+		{"cottages_reet.png","cottages_reet.png","cottages_reet.png","cottages_reet.png","cottages_reet.png","cottages_reet.png"},
+		'default:papyrus', nil );
 cottages.register_roof( 'wood',
 		{"default_tree.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","default_tree.png"},
 		'default:wood', nil);
@@ -169,3 +172,43 @@ cottages.register_roof( 'red',
 cottages.register_roof( 'brown',
 		{"cottages_homedecor_shingles_wood.png","default_wood.png","default_wood.png","default_wood.png","default_wood.png","cottages_homedecor_shingles_wood.png"},
 		'homedecor:shingles_wood', 'default:dirt');
+cottages.register_roof( 'slate',
+		{"cottages_slate.png","default_wood.png","cottages_slate.png","cottages_slate.png","default_wood.png","cottages_slate.png"},
+		'default:stone', nil);
+
+
+---------------------------------------------------------------------------------------
+-- slate roofs are sometimes on vertical fronts of houses
+---------------------------------------------------------------------------------------
+minetest.register_node("cottages:slate_vertical", {
+        description = S("Vertical Slate"),
+        tiles = {"cottages_slate.png","default_wood.png","cottages_slate.png","cottages_slate.png","default_wood.png","cottages_slate.png"},
+        paramtype2 = "facedir",
+        groups = {cracky=2, stone=1},
+        sounds = default.node_sound_stone_defaults(),
+})
+
+
+minetest.register_craft({
+	output  = "cottages:slate_vertical",
+	recipe = { {'default:stone', 'default:wood',  '' }
+	}
+});
+
+---------------------------------------------------------------------------------------
+-- Reed might also be needed as a full block
+---------------------------------------------------------------------------------------
+minetest.register_node("cottages:reet", {
+        description = S("Reet for thatching"),
+        tiles = {"cottages_reet.png"},
+	groups = {snappy=3,choppy=3,oddly_breakable_by_hand=3,flammable=3},
+	sounds = default.node_sound_wood_defaults(),
+})
+
+
+minetest.register_craft({
+	output  = "cottages:reet",
+	recipe = { {'default:papyrus','default:papyrus'},
+	           {'default:papyrus','default:papyrus'},
+	},
+})

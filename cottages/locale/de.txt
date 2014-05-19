@@ -82,16 +82,25 @@ Roof wood = Holzdach
 Roof black = Schwarzes Dach
 Roof red = Rotes Dach
 Roof brown = Braunes Dach
+Roof reet = Reetdach
+Roof slate = Schieferdach
 Roof connector straw = Strohdachverbinder
 Roof connector wood = Holzdachverbinder
 Roof connector black = Schwarzer Dachverbinder
 Roof connector red = Roter Dachverbinder
 Roof connector brown = Brauner Dachverbinder
+Roof connector reet = Reet-Dachverbinder
+Roof connector slate = Schiefer-Dachverbinder
 Roof (flat) straw = Strohdach (flach)
 Roof (flat) wood = Holzdach (flach)
 Roof (flat) black = Schwarzes Dach (flach)
 Roof (flat) red = Rotes Dach (flach)
 Roof (flat) brown = Braunes Dach (flach)
+Roof (flat) reet = Reetdach (flach)
+Roof (flat) slate = Schieferdach (flach)
+Vertical Slate = Vertikaler Schiefer
+Reet for thatching = Reet
+
 
 ### nodes_straw.lua ###
 layer of straw = Strohschicht

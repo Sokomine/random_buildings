@@ -82,16 +82,24 @@ Roof wood =
 Roof black =
 Roof red =
 Roof brown =
+Roof reet =
+Roof slate =
 Roof connector straw =
 Roof connector wood =
 Roof connector black =
 Roof connector red =
 Roof connector brown =
+Roof connector reet =
+Roof connector slate =
 Roof (flat) straw =
 Roof (flat) wood =
 Roof (flat) black =
 Roof (flat) red =
 Roof (flat) brown =
+Roof (flat) reet =
+Roof (flat) slate =
+Vertical Slate =
+Reet for thatching =
 
 ### nodes_straw.lua ###
 layer of straw =
