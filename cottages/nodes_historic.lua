@@ -99,7 +99,7 @@ minetest.register_node("cottages:straw_ground", {
 
 -- note: these houses look good with a single fence pile as window! the glass pane is the version for 'richer' inhabitants
 minetest.register_node("cottages:glass_pane", {
-		description = S("simple glass pane"),
+		description = S("simple glass pane (centered)"),
 		drawtype = "nodebox",
                 -- top, bottom, side1, side2, inner, outer
 		tiles = {"cottages_glass_pane.png"},
@@ -122,6 +122,28 @@ minetest.register_node("cottages:glass_pane", {
 })
 
 
+minetest.register_node("cottages:glass_pane_side", {
+		description = S("simple glass pane"),
+		drawtype = "nodebox",
+                -- top, bottom, side1, side2, inner, outer
+		tiles = {"cottages_glass_pane.png"},
+		paramtype = "light",
+		paramtype2 = "facedir",
+		is_ground_content = true,
+		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
+		node_box = {
+			type = "fixed",
+			fixed = {
+				{ -0.5, -0.5, -0.40,  0.5, 0.5, -0.50},
+			},
+		},
+		selection_box = {
+			type = "fixed",
+			fixed = {
+				{ -0.5, -0.5, -0.40,  0.5, 0.5, -0.50},
+			},
+		},
+})
 
 ---------------------------------------------------------------------------------------
 -- crafting receipes
@@ -167,5 +189,19 @@ minetest.register_craft({
 		{"default:stick", "default:stick", "default:stick" },
 		{"default:stick", "default:glass", "default:stick" },
 		{"default:stick", "default:stick", "default:stick" }
+	}
+})
+
+minetest.register_craft({
+	output = "cottages:glass_pane_side",
+	recipe = {
+		{"cottages:glass_pane"},
+	}
+})
+
+minetest.register_craft({
+	output = "cottages:glass_pane",
+	recipe = {
+		{"cottages:glass_pane_side"},
 	}
 })
