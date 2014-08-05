@@ -34,6 +34,7 @@ minetest.register_node("cottages:wagon_wheel", {
         groups = {choppy=2,dig_immediate=2,attached_node=1},
         legacy_wallmounted = true,
         sounds = default.node_sound_defaults(),
+	is_ground_content = false,
 })
 
 
@@ -44,9 +45,9 @@ minetest.register_node("cottages:feldweg", {
 	paramtype2 = "facedir",
 	groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 	legacy_facedir_simple = true,
-        is_ground_content = true,
         groups = {crumbly=3},
         sounds = default.node_sound_dirt_defaults,
+	is_ground_content = false,
 })
 
 
@@ -55,9 +56,9 @@ minetest.register_node("cottages:loam", {
         description = S("loam"),
         tiles = {"cottages_loam.png"},
 	groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
-        is_ground_content = true,
         groups = {crumbly=3},
         sounds = default.node_sound_dirt_defaults,
+	is_ground_content = false,
 })
 
 -- create stairs if possible
@@ -91,9 +92,9 @@ minetest.register_node("cottages:straw_ground", {
         description = S("straw ground for animals"),
         tiles = {"cottages_darkage_straw.png","cottages_loam.png","cottages_loam.png","cottages_loam.png","cottages_loam.png","cottages_loam.png"},
 	groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
-        is_ground_content = true,
         groups = {crumbly=3},
         sounds = default.node_sound_dirt_defaults,
+	is_ground_content = false,
 })
 
 
@@ -105,7 +106,6 @@ minetest.register_node("cottages:glass_pane", {
 		tiles = {"cottages_glass_pane.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -119,6 +119,7 @@ minetest.register_node("cottages:glass_pane", {
 				{ -0.5, -0.5, -0.05,  0.5, 0.5,  0.05},
 			},
 		},
+		is_ground_content = false,
 })
 
 
@@ -129,7 +130,6 @@ minetest.register_node("cottages:glass_pane_side", {
 		tiles = {"cottages_glass_pane.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -143,6 +143,7 @@ minetest.register_node("cottages:glass_pane_side", {
 				{ -0.5, -0.5, -0.40,  0.5, 0.5, -0.50},
 			},
 		},
+		is_ground_content = false,
 })
 
 ---------------------------------------------------------------------------------------

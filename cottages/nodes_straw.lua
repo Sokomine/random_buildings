@@ -23,7 +23,6 @@ minetest.register_node("cottages:straw_mat", {
         sunlight_propagates = true,
         paramtype = 'light',
         paramtype2 = "facedir",
-        is_ground_content = true,
         walkable = false,
         groups = { snappy = 3 },
         sounds = default.node_sound_leaves_defaults(),
@@ -38,7 +37,8 @@ minetest.register_node("cottages:straw_mat", {
 		fixed = {
 					{-0.48, -0.5,-0.48,  0.48, -0.25, 0.48},
 			}
-	}
+	},
+	is_ground_content = false,
 })
 
 -- straw bales are a must for farming environments; if you for some reason do not have the darkage mod installed, this here gets you a straw bale
@@ -61,7 +61,8 @@ minetest.register_node("cottages:straw_bale", {
 		fixed = {
 					{-0.45, -0.5,-0.45,  0.45,  0.45, 0.45},
 			}
-	}
+	},
+	is_ground_content = false,
 })
 
 -- just straw
@@ -72,6 +73,7 @@ minetest.register_node("cottages:straw", {
 	groups = {snappy=3,choppy=3,oddly_breakable_by_hand=3,flammable=3},
 	sounds = default.node_sound_wood_defaults(),
         -- the bale is slightly smaller than a full node
+	is_ground_content = false,
 })
 
 
@@ -83,6 +85,7 @@ minetest.register_node("cottages:threshing_floor", {
 	paramtype  = "light",
         paramtype2 = "facedir",
 	groups = {cracky=2},
+	is_ground_content = false,
 	node_box = {
 		type = "fixed",
 		fixed = {
@@ -250,6 +253,7 @@ minetest.register_node("cottages:handmill", {
 	paramtype  = "light",
         paramtype2 = "facedir",
 	groups = {cracky=2},
+	is_ground_content = false,
 	node_box = {
 		type = "fixed",
 		fixed = {

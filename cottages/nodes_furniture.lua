@@ -50,6 +50,7 @@ minetest.register_node("cottages:bed_foot", {
 					{-0.5, -0.5, -0.5, 0.5, 0.3, 0.5},
 				}
 	},
+	is_ground_content = false,
 })
 
 -- the bed is split up in two parts to avoid destruction of blocks on placement
@@ -81,6 +82,7 @@ minetest.register_node("cottages:bed_head", {
 					{-0.5, -0.5, -0.5, 0.5, 0.3, 0.5},
 				}
 	},
+	is_ground_content = false,
 })
 
 
@@ -95,7 +97,6 @@ minetest.register_node("cottages:sleeping_mat", {
         sunlight_propagates = true,
         paramtype = 'light',
         paramtype2 = "facedir",
-        is_ground_content = true,
         walkable = false,
         groups = { snappy = 3 },
         sounds = default.node_sound_leaves_defaults(),
@@ -113,7 +114,8 @@ minetest.register_node("cottages:sleeping_mat", {
                 fixed = {
                                         {-0.48, -0.5,-0.48,  0.48, -0.25, 0.48},
                         }
-        }
+        },
+	is_ground_content = false,
 })
 
 
@@ -144,6 +146,7 @@ minetest.register_node("cottages:bench", {
 					{-0.5, -0.5, 0, 0.5, 0, 0.5},
 				}
 	},
+	is_ground_content = false,
 })
 
 
@@ -155,7 +158,6 @@ minetest.register_node("cottages:table", {
 		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -170,6 +172,7 @@ minetest.register_node("cottages:table", {
 				{ -0.5, -0.5, -0.5,  0.5, 0.4,  0.5},
 			},
 		},
+		is_ground_content = false,
 })
 
 
@@ -182,7 +185,6 @@ minetest.register_node("cottages:shelf", {
 		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -232,6 +234,7 @@ minetest.register_node("cottages:shelf", {
                            meta:set_string('infotext', S('open storage shelf (empty)'));
                         end
                 end,
+		is_ground_content = false,
 
 
 })
@@ -243,7 +246,6 @@ minetest.register_node("cottages:stovepipe", {
 		tiles = {"default_steel_block.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -257,6 +259,7 @@ minetest.register_node("cottages:stovepipe", {
 				{  0.20, -0.5, 0.20,  0.45, 0.5,  0.45},
 			},
 		},
+		is_ground_content = false,
 })
 
 
@@ -268,7 +271,6 @@ minetest.register_node("cottages:washing", {
 		tiles = {"default_clay.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -298,6 +300,7 @@ minetest.register_node("cottages:washing", {
                       minetest.chat_send_player( player:get_player_name(), S("You feel much cleaner after some washing."));
 		   end
                 end,
+		is_ground_content = false,
 
 })
 

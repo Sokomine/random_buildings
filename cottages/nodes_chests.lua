@@ -38,6 +38,7 @@ minetest.register_node("cottages:chest_private", {
         legacy_facedir_simple = true,
         on_construct = cottages_chests.on_construct,
         can_dig      = cottages_chests.can_dig,
+	is_ground_content = false,
 })
 
 minetest.register_node("cottages:chest_work", {
@@ -50,6 +51,7 @@ minetest.register_node("cottages:chest_work", {
         legacy_facedir_simple = true,
         on_construct = cottages_chests.on_construct,
         can_dig      = cottages_chests.can_dig,
+	is_ground_content = false,
 })
 
 minetest.register_node("cottages:chest_storage", {
@@ -62,5 +64,6 @@ minetest.register_node("cottages:chest_storage", {
         legacy_facedir_simple = true,
         on_construct = cottages_chests.on_construct,
         can_dig      = cottages_chests.can_dig,
+	is_ground_content = false,
 })
 

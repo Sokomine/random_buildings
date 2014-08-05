@@ -143,7 +143,6 @@ end
                 description = S("barrel (closed)"),
                 paramtype = "light",
                 tiles = {"cottages_minimal_wood.png","cottages_minimal_wood.png","cottages_barrel.png"}, -- "default_tree_top.png", "default_tree_top.png", "default_tree.png"},
-                is_ground_content = true,
                 drawtype = "nodebox",
                 node_box = {
                         type = "fixed",
@@ -171,7 +170,8 @@ end
                 end,
                 on_metadata_inventory_put = function(pos, listname, index, stack, player)
                    return barrel.on_metadata_inventory_put( pos, listname, index, stack, player );
-                end
+                end,
+		is_ground_content = false,
 
         })
 
@@ -180,7 +180,6 @@ end
                 description = S("barrel (open)"),
                 paramtype = "light",
                 tiles = {"cottages_minimal_wood.png","cottages_minimal_wood.png","cottages_barrel.png"},--"default_tree_top.png", "default_tree_top.png", "default_tree.png"},
-                is_ground_content = true,
                 drawtype = "nodebox",
                 node_box = {
                         type = "fixed",
@@ -198,6 +197,7 @@ end
                 on_punch      = function(pos, node, puncher)
                     minetest.env:add_node(pos, {name = "cottages:barrel_lying_open", param2 = node.param2})
                 end,
+		is_ground_content = false,
         })
 
         -- horizontal barrel
@@ -206,7 +206,6 @@ end
                 paramtype = "light",
 	        paramtype2 = "facedir",
                 tiles = {"cottages_barrel_lying.png","cottages_barrel_lying.png","cottages_minimal_wood.png","cottages_minimal_wood.png","cottages_barrel_lying.png"},--"default_tree_top.png", "default_tree_top.png", "default_tree.png"},
-                is_ground_content = true,
                 drawtype = "nodebox",
                 node_box = {
                         type = "fixed",
@@ -228,6 +227,7 @@ end
                        minetest.env:add_node(pos, {name = "cottages:barrel", param2 = 0})
                     end
                 end,
+		is_ground_content = false,
         })
 
         -- horizontal barrel, open
@@ -236,7 +236,6 @@ end
                 paramtype = "light",
 	        paramtype2 = "facedir",
                 tiles = {"cottages_barrel_lying.png","cottages_barrel_lying.png","cottages_minimal_wood.png","cottages_minimal_wood.png","cottages_barrel_lying.png"},--"default_tree_top.png", "default_tree_top.png", "default_tree.png"},
-                is_ground_content = true,
                 drawtype = "nodebox",
                 node_box = {
                         type = "fixed",
@@ -258,6 +257,7 @@ end
                        minetest.env:add_node(pos, {name = "cottages:barrel_open", param2 = 0})
                     end
                 end,
+		is_ground_content = false,
 
         })
 
@@ -266,7 +266,6 @@ end
                 description = S("tub"),
                 paramtype = "light",
                 tiles = {"cottages_minimal_wood.png","cottages_minimal_wood.png","cottages_barrel.png"},--"default_tree_top.png", "default_tree_top.png", "default_tree.png"},
-                is_ground_content = true,
                 drawtype = "nodebox",
                 node_box = {
                         type = "fixed",
@@ -274,6 +273,7 @@ end
                 },
                 groups = { tree = 1, snappy = 1, choppy = 2, oddly_breakable_by_hand = 1, flammable = 2
                 },
+		is_ground_content = false,
         })
 
 

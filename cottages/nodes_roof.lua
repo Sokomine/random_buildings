@@ -22,7 +22,6 @@ cottages.register_roof = function( name, tiles, basic_material, homedecor_altern
 		tiles = tiles,
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -38,6 +37,7 @@ cottages.register_roof = function( name, tiles, basic_material, homedecor_altern
 				{-0.5, 0, 0, 0.5, 0.5, 0.5},
 			},
 		},
+		is_ground_content = false,
 	})
 
    -- a better roof than the normal stairs; this one is for usage directly on top of walls (it has the form of a stair)
@@ -50,7 +50,6 @@ cottages.register_roof = function( name, tiles, basic_material, homedecor_altern
 		tiles = tiles,
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -66,6 +65,7 @@ cottages.register_roof = function( name, tiles, basic_material, homedecor_altern
 				{-0.5, 0, 0, 0.5, 0.5, 0.5},
 			},
 		},
+		is_ground_content = false,
 	})
 
    -- this one is the slab version of the above roof
@@ -78,7 +78,6 @@ cottages.register_roof = function( name, tiles, basic_material, homedecor_altern
 		tiles = { tiles[1], tiles[2], tiles[1], tiles[1], tiles[1], tiles[1] };
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -92,6 +91,7 @@ cottages.register_roof = function( name, tiles, basic_material, homedecor_altern
 				{-0.5, -0.5, -0.5, 0.5, 0, 0.5},
 			},
 		},
+		is_ground_content = false,
 	})
 
 
@@ -186,6 +186,7 @@ minetest.register_node("cottages:slate_vertical", {
         paramtype2 = "facedir",
         groups = {cracky=2, stone=1},
         sounds = default.node_sound_stone_defaults(),
+	is_ground_content = false,
 })
 
 
@@ -203,6 +204,7 @@ minetest.register_node("cottages:reet", {
         tiles = {"cottages_reet.png"},
 	groups = {snappy=3,choppy=3,oddly_breakable_by_hand=3,flammable=3},
 	sounds = default.node_sound_wood_defaults(),
+	is_ground_content = false,
 })
 
 

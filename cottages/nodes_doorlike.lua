@@ -56,7 +56,6 @@ minetest.register_node("cottages:window_shutter_open", {
 		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
                 -- larger than one node but slightly smaller than a half node so that wallmounted torches pose no problem
 		node_box = {
@@ -77,6 +76,7 @@ minetest.register_node("cottages:window_shutter_open", {
                     minetest.env:add_node(pos, {name = "cottages:window_shutter_closed", param2 = node.param2})
                     cottages_window_sutter_operate( pos, "cottages:window_shutter_open", "cottages:window_shutter_closed" );
                 end,
+		is_ground_content = false,
 })
 
 minetest.register_node("cottages:window_shutter_closed", {
@@ -86,7 +86,6 @@ minetest.register_node("cottages:window_shutter_closed", {
 		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -105,6 +104,7 @@ minetest.register_node("cottages:window_shutter_closed", {
                     minetest.env:add_node(pos, {name = "cottages:window_shutter_open", param2 = node.param2})
                     cottages_window_sutter_operate( pos, "cottages:window_shutter_closed", "cottages:window_shutter_open" );
                 end,
+		is_ground_content = false,
 })
 
 
@@ -152,7 +152,6 @@ minetest.register_node("cottages:half_door", {
 		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -182,6 +181,7 @@ minetest.register_node("cottages:half_door", {
                        minetest.env:add_node( {x=pos.x,y=(pos.y+1),z=pos.z}, {name = "cottages:half_door", param2 = param2})
                     end
                 end,
+		is_ground_content = false,
 })
 
 
@@ -193,7 +193,6 @@ minetest.register_node("cottages:half_door_inverted", {
 		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -222,6 +221,7 @@ minetest.register_node("cottages:half_door_inverted", {
                        minetest.env:add_node( {x=pos.x,y=(pos.y+1),z=pos.z}, {name = "cottages:half_door_inverted", param2 = param2})
                     end
                 end,
+		is_ground_content = false,
 })
 
 
@@ -237,7 +237,6 @@ minetest.register_node("cottages:gate_closed", {
 		tiles = {"default_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -259,6 +258,7 @@ minetest.register_node("cottages:gate_closed", {
                 on_rightclick = function(pos, node, puncher)
                     minetest.env:add_node(pos, {name = "cottages:gate_open", param2 = node.param2})
                 end,
+		is_ground_content = false,
 })
 
 
@@ -269,7 +269,6 @@ minetest.register_node("cottages:gate_open", {
 		tiles = {"default_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		drop = "cottages:gate_closed",
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
@@ -293,6 +292,7 @@ minetest.register_node("cottages:gate_open", {
                 on_rightclick = function(pos, node, puncher)
                     minetest.env:add_node(pos, {name = "cottages:gate_closed", param2 = node.param2})
                 end,
+		is_ground_content = false,
 })
 
 
@@ -346,6 +346,7 @@ cottages.register_hatch = function( nodename, description, texture, receipe_item
 
                     minetest.env:add_node(pos, {name = node.name, param2 = new_facedirs[ node.param2+1 ]})
                 end,
+		is_ground_content = false,
 	})
 
 	minetest.register_craft({

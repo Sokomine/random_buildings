@@ -15,7 +15,6 @@ minetest.register_node("cottages:fence_small", {
 		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -34,6 +33,7 @@ minetest.register_node("cottages:fence_small", {
 				{ -0.50, -0.50, 0.4,  0.50,  0.50,  0.5},
 			},
 		},
+		is_ground_content = false,
 })
 
 
@@ -44,7 +44,6 @@ minetest.register_node("cottages:fence_corner", {
 		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -70,6 +69,7 @@ minetest.register_node("cottages:fence_corner", {
 				{ -0.50, -0.50,-0.5,  0.50,  0.50,  0.5},
 			},
 		},
+		is_ground_content = false,
 })
 
 
@@ -80,7 +80,6 @@ minetest.register_node("cottages:fence_end", {
 		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		is_ground_content = true,
 		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
 		node_box = {
 			type = "fixed",
@@ -113,6 +112,7 @@ minetest.register_node("cottages:fence_end", {
 				{ -0.50, -0.50,-0.5,  0.50,  0.50,  0.5},
 			},
 		},
+		is_ground_content = false,
 })
 
 minetest.register_craft({

@@ -197,6 +197,7 @@ minetest.register_node("cottages:anvil", {
 				S('Your workpiece improves.'));
 		end
 	end,
+	is_ground_content = false,
 })
 
 
