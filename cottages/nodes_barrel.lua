@@ -280,9 +280,9 @@ end
 minetest.register_craft({
 	output = "cottages:barrel",
 	recipe = {
-		{"default:wood",        "",              "default:wood" },
+		{"group:wood",          "",              "group:wood" },
 		{"default:steel_ingot", "",              "default:steel_ingot"},
-		{"default:wood",        "default:wood",  "default:wood" },
+		{"group:wood",          "group:wood",    "group:wood" },
 	},
 })
 
