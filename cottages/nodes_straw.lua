@@ -106,7 +106,7 @@ minetest.register_node("cottages:threshing_floor", {
 	},
 	on_construct = function(pos)
 
-               	local meta = minetest.env:get_meta(pos);
+               	local meta = minetest.get_meta(pos);
                	meta:set_string("infotext", S("Threshing floor"));
                	local inv = meta:get_inventory();
                	inv:set_size("harvest", 2);
@@ -195,7 +195,7 @@ minetest.register_node("cottages:threshing_floor", {
 		end
 		local name = puncher:get_player_name();
 
-               	local meta = minetest.env:get_meta(pos);
+               	local meta = minetest.get_meta(pos);
                	local inv = meta:get_inventory();
 
 		local input = inv:get_list('harvest');
@@ -247,48 +247,28 @@ minetest.register_node("cottages:threshing_floor", {
 
 
 minetest.register_node("cottages:handmill", {
-	drawtype = "nodebox",
 	description = S("mill, powered by punching"),
+	drawtype = "mesh",
+    mesh = "cottages_handmill.obj",
 	tiles = {"default_stone.png"},
 	paramtype  = "light",
-        paramtype2 = "facedir",
+    paramtype2 = "facedir",
 	groups = {cracky=2},
 	is_ground_content = false,
-	node_box = {
-		type = "fixed",
-		fixed = {
-
-				-- taken from 3dfornitures tree redefinition
-				{-0.35,-0.50,-0.4,  0.35,-0.32,0.4},
-				{-0.4, -0.50,-0.35, 0.4, -0.32,0.35},
-				{-0.25,-0.50,-0.45, 0.25,-0.32,0.45},
-				{-0.45,-0.50,-0.25, 0.45,-0.32,0.25},
-				{-0.15,-0.50,-0.5,  0.15,-0.32,0.5},
-				{-0.5, -0.50,-0.15, 0.5, -0.32,0.15},
-
-				-- upper mill wheel
-				{-0.35,-0.27,-0.4,  0.35,-0.05,0.4},
-				{-0.4, -0.27,-0.35, 0.4, -0.05,0.35},
-				{-0.25,-0.27,-0.45, 0.25,-0.05,0.45},
-				{-0.45,-0.27,-0.25, 0.45,-0.05,0.25},
-				{-0.15,-0.27,-0.5,  0.15,-0.05,0.5},
-				{-0.5, -0.27,-0.15, 0.5, -0.05,0.15},
-
-				-- middle axis
-				{-0.05,-0.50,-0.05, 0.05, 0.15,0.05},
-				-- handle
-				{-0.35,-0.05,-0.35,-0.25, 0.25,-0.25},
-			}
-	},
 	selection_box = {
 		type = "fixed",
 		fixed = {
 					{-0.50, -0.5,-0.50, 0.50,  0.25, 0.50},
 			}
 	},
+	collision_box = {
+		type = "fixed",
+		fixed = {
+					{-0.50, -0.5,-0.50, 0.50,  0.25, 0.50},
+			}
+	},
 	on_construct = function(pos)
-
-               	local meta = minetest.env:get_meta(pos);
+               	local meta = minetest.get_meta(pos);
                	meta:set_string("infotext", S("Mill, powered by punching"));
                	local inv = meta:get_inventory();
                	inv:set_size("seeds", 1);
@@ -367,7 +347,7 @@ minetest.register_node("cottages:handmill", {
 		end
 		local name = puncher:get_player_name();
 
-               	local meta = minetest.env:get_meta(pos);
+               	local meta = minetest.get_meta(pos);
                	local inv = meta:get_inventory();
 
 		local input = inv:get_list('seeds');
