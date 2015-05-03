@@ -71,7 +71,6 @@ minetest.register_node("cottages:window_shutter_open", {
 				{-0.9, -0.5,  0.4,  0.9, 0.5,  0.5},
 			},
 		},
-		drop = "cottages:window_shutter_closed",
                 on_rightclick = function(pos, node, puncher)
                     minetest.env:add_node(pos, {name = "cottages:window_shutter_closed", param2 = node.param2})
                     cottages_window_sutter_operate( pos, "cottages:window_shutter_open", "cottages:window_shutter_closed" );
@@ -86,7 +85,7 @@ minetest.register_node("cottages:window_shutter_closed", {
 		tiles = {"cottages_minimal_wood.png"},
 		paramtype = "light",
 		paramtype2 = "facedir",
-		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
+		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2,not_in_creative_inventory=1},
 		node_box = {
 			type = "fixed",
 			fixed = {
@@ -105,6 +104,7 @@ minetest.register_node("cottages:window_shutter_closed", {
                     cottages_window_sutter_operate( pos, "cottages:window_shutter_closed", "cottages:window_shutter_open" );
                 end,
 		is_ground_content = false,
+		drop = "cottages:window_shutter_open",
 })
 
 
@@ -169,10 +169,10 @@ minetest.register_node("cottages:half_door", {
                     local node2 = minetest.env:get_node( {x=pos.x,y=(pos.y+1),z=pos.z});
 
                     local param2 = node.param2;
-                    if(     param2 == 1) then param2 = 2;
-                    elseif( param2 == 2) then param2 = 1;
-                    elseif( param2 == 3) then param2 = 0;
-                    elseif( param2 == 0) then param2 = 3;
+                    if(     param2%4 == 1) then param2 = param2+1; --2;
+                    elseif( param2%4 == 2) then param2 = param2-1; --1;
+                    elseif( param2%4 == 3) then param2 = param2-3; --0;
+                    elseif( param2%4 == 0) then param2 = param2+3; --3;
                     end;
                     minetest.env:add_node(pos, {name = "cottages:half_door", param2 = param2})
                     -- if the node above consists of a door of the same type, open it as well
@@ -210,10 +210,10 @@ minetest.register_node("cottages:half_door_inverted", {
                     local node2 = minetest.env:get_node( {x=pos.x,y=(pos.y+1),z=pos.z});
 
                     local param2 = node.param2;
-                    if(     param2 == 1) then param2 = 0;
-                    elseif( param2 == 0) then param2 = 1;
-                    elseif( param2 == 2) then param2 = 3;
-                    elseif( param2 == 3) then param2 = 2;
+                    if(     param2%4 == 1) then param2 = param2-1; --0;
+                    elseif( param2%4 == 0) then param2 = param2+1; --1;
+                    elseif( param2%4 == 2) then param2 = param2+1; --3;
+                    elseif( param2%4 == 3) then param2 = param2-1; --2;
                     end;
                     minetest.env:add_node(pos, {name = "cottages:half_door_inverted", param2 = param2})
                     -- open upper parts of this door (if there are any)
@@ -270,7 +270,7 @@ minetest.register_node("cottages:gate_open", {
 		paramtype = "light",
 		paramtype2 = "facedir",
 		drop = "cottages:gate_closed",
-		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
+		groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2,not_in_creative_inventory=1},
 		node_box = {
 			type = "fixed",
 			fixed = {
@@ -293,6 +293,7 @@ minetest.register_node("cottages:gate_open", {
                     minetest.env:add_node(pos, {name = "cottages:gate_closed", param2 = node.param2})
                 end,
 		is_ground_content = false,
+		drop = "cottages:gate_closed",
 })
 
 
@@ -347,6 +348,7 @@ cottages.register_hatch = function( nodename, description, texture, receipe_item
                     minetest.env:add_node(pos, {name = node.name, param2 = new_facedirs[ node.param2+1 ]})
                 end,
 		is_ground_content = false,
+		on_place = minetest.rotate_node,
 	})
 
 	minetest.register_craft({
