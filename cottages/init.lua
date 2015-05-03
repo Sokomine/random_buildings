@@ -19,6 +19,9 @@
 
 cottages = {}
 
+--cottages.config_use_mesh_barrel   = false;
+--cottages.config_use_mesh_handmill = true;
+
 -- uncomment parts you do not want
 
 dofile(minetest.get_modpath("cottages").."/nodes_furniture.lua");
@@ -29,7 +32,7 @@ dofile(minetest.get_modpath("cottages").."/nodes_doorlike.lua");
 dofile(minetest.get_modpath("cottages").."/nodes_fences.lua");
 dofile(minetest.get_modpath("cottages").."/nodes_roof.lua");
 dofile(minetest.get_modpath("cottages").."/nodes_barrel.lua");
-dofile(minetest.get_modpath("cottages").."/nodes_chests.lua");
+--dofile(minetest.get_modpath("cottages").."/nodes_chests.lua");
 
 -- this is only required and useful if you run versions of the random_buildings mod where the nodes where defined inside that mod
 dofile(minetest.get_modpath("cottages").."/alias.lua");
