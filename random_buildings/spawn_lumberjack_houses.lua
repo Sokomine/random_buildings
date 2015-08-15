@@ -29,7 +29,7 @@ random_buildings.build_next_to_tree = function( pos )
 
    -- abort if the tree has not appeared
    if( not( pos.last_status )) then
-      local pos_tree = minetest.env:find_node_near(pos, 5, pos.typ);
+      local pos_tree = minetest.env:find_node_near(pos, 15, pos.typ);
       -- no tree?
       if( not( pos_tree )) then
          print( "[Mod random_buildings] Aborting placement of lumberjack house at "..minetest.serialize( pos ).." due to lack of tree: No "..tostring( pos.typ ).." found!");
@@ -39,9 +39,9 @@ random_buildings.build_next_to_tree = function( pos )
 
    local replacements = {};
    if( pos.tree_typ ~= 'common' and minetest.get_modpath("moretrees") ~= nil ) then
-      replacements[ 'moretrees:TYP_planks' ]         = 'moretrees:'..pos.typ..'_planks';
-      replacements[ 'moretrees:TYP_trunk'  ]         = 'moretrees:'..pos.typ..'_trunk';
-      replacements[ 'moretrees:TYP_trunk_sideways' ] = 'moretrees:'..pos.typ..'_trunk_sideways';
+      replacements[ 'moretrees:TYP_planks' ]         = 'moretrees:'..pos.tree_typ..'_planks';
+      replacements[ 'moretrees:TYP_trunk'  ]         = 'moretrees:'..pos.tree_typ..'_trunk';
+      replacements[ 'moretrees:TYP_trunk_sideways' ] = 'moretrees:'..pos.tree_typ..'_trunk'; -- those are now normal trunks rotated
    else
       replacements[ 'moretrees:TYP_planks' ]         = 'default:wood';
       replacements[ 'moretrees:TYP_trunk'  ]         = 'default:tree';
