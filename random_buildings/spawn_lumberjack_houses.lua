@@ -131,10 +131,10 @@ else
 
 
 
-   random_buildings.generate_tree = plantslib.generate_tree
+   random_buildings.generate_tree = biome_lib.generate_tree
 
-   plantslib.generate_tree = function( orig, pos, model )
-   --   print( " random_buildings:TREE plantslib:generate_tree called: "..tostring( model ));
+   biome_lib.generate_tree = function( orig, pos, model )
+   --   print( " random_buildings:TREE biome_lib:generate_tree called: "..tostring( model ));
       if( type( model ) == "table" and math.random(1,chance)==1) then
          minetest.after( delay, random_buildings.build_next_to_tree, {x=pos.x,y=pos.y,z=pos.z,typ=model.trunk} );
       end
